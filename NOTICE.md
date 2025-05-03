@@ -67,4 +67,4 @@ For inquiries regarding **licensing, authorized use, or compliance**, please ref
 
 ---
 
-**All rights not expressly granted herein are reserved.**
+**All rights not expressly granted herein are reserved.** 
