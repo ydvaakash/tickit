@@ -1,7 +1,56 @@
-# Ignore environment variables file
+# This file is part of Tickit, owned and operated by Aakash Yadav.
+# It defines files and directories that should be ignored by Git.
+
+
+# Node.js dependencies
+node_modules/
+
+# TypeScript build output
+dist/
+
+# Environment variables
 .env
 
-# Other common ignores
-node_modules/
-dist/
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
 *.log
+
+# Editor & OS-specific files
+.vscode/                # VSCode workspace settings (optional, remove if you want to share workspace settings)
+.vscode/**.cache        # Cache files inside .vscode folder
+.vscode-test/           # VSCode test workspaces
+.idea/                  # WebStorm/IntelliJ IDE settings (just in case)
+.DS_Store               # macOS system file
+Thumbs.db               # Windows system file
+
+# Docker-related files
+docker-compose.override.yml
+docker-compose.override.yaml
+.dockerignore
+**/docker-data/
+**/docker-volumes/
+
+# PostgreSQL-related files (if applicable)
+*.pgsql
+*.psql
+pgdata/
+postgres-data/
+dump.sql
+
+# Build artifacts
+*.out
+*.o
+*.obj
+*.exe
+*.a
+*.so
+*.dylib
+*.dll
+
+# Other potential ignored files
+*.swp
+*.swo
