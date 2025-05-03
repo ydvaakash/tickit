@@ -1,5 +1,3 @@
----
-
 # Privacy Policy
 
 Effective Date: **10-March-2025**
@@ -10,7 +8,7 @@ This Privacy Policy outlines how **Tickit**, owned and operated by **Aakash Yada
 
 By accessing, using, or registering on **Tickit**, you agree to the terms outlined in this Privacy Policy. If you **do not agree** with any of the terms mentioned in this document, please **refrain from using** the product immediately.
 
----
+
 
 ## Data Collected
 
