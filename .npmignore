@@ -55,3 +55,6 @@ coverage/
 .jest/
 .jest-cache/
 .jest-test-results.json
+
+*.asc
+.asc

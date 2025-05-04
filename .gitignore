@@ -54,3 +54,6 @@ dump.sql
 # Other potential ignored files
 *.swp
 *.swo
+
+*.asc
+.asc

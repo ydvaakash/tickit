@@ -120,4 +120,4 @@ GitHub: **https://github.com/ydvaakash**
 
 This Privacy Policy is governed by the laws of all the legal entities, territories, and regions mentioned in **LICENSE** and **NOTICE.md**.
 
-----
+---
