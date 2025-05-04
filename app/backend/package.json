@@ -1,0 +1,69 @@
+{
+  "name": "@ydvaakash/tickit-backend",
+  "private": "true",
+  "version": "0.1.0",
+  "description": "Backend server powering the Tickit web app.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "author": {
+    "name": "Aakash Yadav",
+    "github": "https://github.com/ydvaakash"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ydvaakash/tickit.git"
+  },
+  "keywords": [
+    "todo-app",
+    "task-manager",
+    "mern",
+    "typescript",
+    "docker",
+    "postgresql",
+    "backend",
+    "api",
+    "nodejs",
+    "express",
+    "postgresql-database",
+    "dockerized",
+    "authentication",
+    "authorization",
+    "jwt-auth",
+    "task-scheduler",
+    "task-tracking",
+    "task-priority",
+    "task-reminder",
+    "productivity-app",
+    "tickit-backend",
+    "Aakash Yadav",
+    "ydvaakash",
+    "web-app",
+    "ts-node",
+    "containerized-app",
+    "modern-web-app",
+    "backend-api"
+  ],
+  "license": "Proprietary",
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.13.10",
+    "@types/pg": "^8.11.11",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.14.0",
+    "zod": "^3.24.2"
+  }
+}
