@@ -50,15 +50,9 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Main router to delegate requests to specific route handlers
+type LoginRequestBody = {
+  email: string;
+  user_password: string;
+}
 
-import express, { Router } from 'express';
-import signupRouter from './signupRoute';
-import { loginRouter } from './loginRoute';
-
-const mainRouter: Router = express.Router();
-
-mainRouter.use('/signup', signupRouter);
-mainRouter.use('/login', loginRouter);
-
-export default mainRouter;
+export { LoginRequestBody };

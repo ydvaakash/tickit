@@ -50,15 +50,24 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Main router to delegate requests to specific route handlers
+// Generate Public UID for the user
 
-import express, { Router } from 'express';
-import signupRouter from './signupRoute';
-import { loginRouter } from './loginRoute';
+import generateRandomString from './generateRandomString';
+import bcrypt from 'bcrypt';
 
-const mainRouter: Router = express.Router();
+const generateUserPublicUid = async (bcryptSaltRoundsAsNumber: number): Promise<string> => {
+  const currentDate: Date = new Date();
+  const currentTimeStampInMillisecondsInUTC: number = currentDate.getTime();
+  let randomString: string = generateRandomString(5);
+  let stringToHashToGenerateUserPublicUid: string = currentTimeStampInMillisecondsInUTC.toString()+randomString;
+  let hashedUserPublicUid: string = '';
+  try {
+    hashedUserPublicUid = await bcrypt.hash(stringToHashToGenerateUserPublicUid, bcryptSaltRoundsAsNumber);
+  } catch(err) {
+    return hashedUserPublicUid = '';
+  }
 
-mainRouter.use('/signup', signupRouter);
-mainRouter.use('/login', loginRouter);
+  return hashedUserPublicUid;
+};
 
-export default mainRouter;
+export { generateUserPublicUid };

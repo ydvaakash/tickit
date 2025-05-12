@@ -56,14 +56,15 @@ import { Request, Response } from 'express';
 import pgdbpool from '../database/databasePool';
 import bcrypt from 'bcrypt';
 import { QueryResult } from 'pg';
-import generateRandomString from '../utils/generateRandomString';
-import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import { getStringEnvVar } from '../utils/getStringEnvironmentVariable';
 import { firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
 import { lastNameTypeFromZod } from '../zodSchemas/lastNameZodSchema';
 import { emailTypeFromZod } from '../zodSchemas/emailZodSchema';
 import { userPasswordTypeFromZod } from '../zodSchemas/userPasswordZodSchema';
+import { generateRefreshToken } from '../utils/generateRefreshToken';
+import { generateAccessToken } from '../utils/generateAccessToken';
+import { generateUserPublicUid } from '../utils/generateUserPublicUid';
 
 const signupLogic = async (req: Request, res: Response): Promise<void> => {
   let userSuppliedFirstName: firstNameTypeFromZod = req.body.first_name;
@@ -112,9 +113,16 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
 
   // hash the user provided password
   let hashedPassword: string = '';
-  const bcryptSaltRounds = 10;
+  const bcryptSaltRounds: string = getStringEnvVar('BCRYPTSALTROUNDS');
+  if(bcryptSaltRounds === '') {
+    res.status(500).json({
+      msg: 'Internal server error. Missing value for \'salt rounds\' to hash user password.'
+    });
+    return ;
+  }
+  const bcryptSaltRoundsAsNumber: number = parseInt(bcryptSaltRounds);
   try {
-    hashedPassword = await bcrypt.hash(userSuppliedUserPassword, bcryptSaltRounds);
+    hashedPassword = await bcrypt.hash(userSuppliedUserPassword, bcryptSaltRoundsAsNumber);
   } catch(err) {
     res.status(500).json({
       msg: 'Server error. Password hashing failed.'
@@ -145,16 +153,10 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
   }
 
   // generate user_public_uid
-  const currentDate: Date = new Date();
-  const currentTimeStampInMillisecondsInUTC: number = currentDate.getTime();
-  let randomString: string = generateRandomString(5);
-  let stringToHashToGenerateUserPublicUid: string = currentTimeStampInMillisecondsInUTC.toString()+randomString;
-  let hashedUserPublicUid: string = '';
-  try {
-    hashedUserPublicUid = await bcrypt.hash(stringToHashToGenerateUserPublicUid, bcryptSaltRounds);
-  } catch(err) {
+  const hashedUserPublicUid: string = await generateUserPublicUid(bcryptSaltRoundsAsNumber);
+  if(hashedUserPublicUid === '') {
     res.status(500).json({
-      msg: 'Server error. Password hashing failed.'
+      msg: 'Internal server error. Couldn\'t generate hashed user public uid.'
     });
     return ;
   }
@@ -175,51 +177,38 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
     return ;
   }
 
-  // generate JWT
-  const jwtSecretKey: string = getStringEnvVar('JWTSECRETKEY');
-  if(jwtSecretKey == '') {
+  const refreshTokenForUser: string = generateRefreshToken(hashedUserPublicUid);
+  let refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'];
+
+  if(!refreshTokenValidity || (refreshTokenForUser === '')) {
     res.status(500).json({
-      msg: "Internal server error. Missing jwt secret key in environment variables."
+      msg: 'Internal server error. Couldn\'t generate refresh token for user.'
     });
     return ;
   }
 
-  const jwtIssuer: string = getStringEnvVar('JWTISSUER');
-  if(jwtIssuer == '') {
+  const accessTokenForUser: string = generateAccessToken(hashedUserPublicUid);
+
+  if(accessTokenForUser === '') {
     res.status(500).json({
-      msg: "Internal server error. Missing jwt issuer key in environment variables."
+      msg: 'Internal server error. Couldn\'t generate access token for user.'
     });
     return ;
   }
 
-  const jwtAudience: string = getStringEnvVar('JWTAUDIENCE1');
-  if(jwtAudience == '') {
-    res.status(500).json({
-      msg: "Internal server error. Missing jwt audience key in environment variables."
-    });
-    return ;
-  }
-
-  let jwtToken: string;
-
-  try {
-    jwtToken = jwt.sign({uid: hashedUserPublicUid}, jwtSecretKey, {
-      issuer: jwtIssuer,
-      audience: jwtAudience
-    });
-  } catch(err) {
-    res.status(500).json({
-      msg: 'Internal server error. Couldn\'t generate jwt token for the user.'
-    });
-    return ;
-  }
-
-  // response from route if everything worked well
-  res.status(200).json({
-    jwtToken: jwtToken
+  res.cookie('tickitRefreshToken', refreshTokenForUser, {
+    httpOnly: true,
+    // secure: true,
+    sameSite: 'strict',
+    maxAge: parseInt(refreshTokenValidity) * 24 * 60 * 60 * 1000
   });
 
-  return ;  
+  res.status(200).json({
+    accessToken: accessTokenForUser,
+    msg: 'Signup successful'
+  });
+
+  return ;
 }
 
 export default signupLogic;

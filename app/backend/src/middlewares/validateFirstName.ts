@@ -67,7 +67,7 @@ const validateFirstName = (req: Request, res: Response, next: NextFunction): voi
       return ;
     }
 
-    let receivedValueOfFirstName = req.body.first_name;
+    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
 
     if(typeof receivedValueOfFirstName !== 'string') {
       receivedValueOfFirstName = String(receivedValueOfFirstName);

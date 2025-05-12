@@ -50,15 +50,34 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Main router to delegate requests to specific route handlers
+// Generate 'access-token' with shorter validity
 
-import express, { Router } from 'express';
-import signupRouter from './signupRoute';
-import { loginRouter } from './loginRoute';
+import 'dotenv/config';
+import jwt from 'jsonwebtoken';
 
-const mainRouter: Router = express.Router();
+const generateAccessToken = (userPublicUid: string): string => {
+  let finalAccessToken: string = '';
 
-mainRouter.use('/signup', signupRouter);
-mainRouter.use('/login', loginRouter);
+  const accessTokenSecretKey: string | undefined = process.env['ACCESSTOKENSECRETKEY'];
+  const accessTokenIssuer: string | undefined = process.env['ACCESSTOKENISSUER'];
+  const accessTokenAudience: string | undefined = process.env['ACCESSTOKENAUDIENCE'];
+  const accessTokenValidity: string | undefined = process.env['ACCESSTOKENVALIIDITY'];
 
-export default mainRouter;
+  if(!accessTokenSecretKey || !accessTokenIssuer || !accessTokenAudience || !accessTokenValidity) {
+    return finalAccessToken = '';
+  }
+
+  try {
+    finalAccessToken = jwt.sign({uid: userPublicUid}, accessTokenSecretKey, {
+      expiresIn: parseInt(accessTokenValidity),
+      issuer: accessTokenIssuer,
+      audience: accessTokenAudience
+    });
+  } catch(err) {
+    finalAccessToken = '';
+  }
+
+  return finalAccessToken;
+};
+
+export { generateAccessToken };

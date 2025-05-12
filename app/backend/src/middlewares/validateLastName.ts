@@ -53,7 +53,7 @@
 // Middleware to validate the "last_name"
 
 import { Request, Response, NextFunction } from 'express';
-import { lastNameZodSchema } from '../zodSchemas/lastNameZodSchema';
+import { lastNameZodSchema, lastNameTypeFromZod } from '../zodSchemas/lastNameZodSchema';
 import { ZodError } from 'zod';
 
 const validateLastName = (req: Request, res: Response, next: NextFunction): void => {
@@ -67,7 +67,7 @@ const validateLastName = (req: Request, res: Response, next: NextFunction): void
       return ;
     }
 
-    let receivedValueOfLastName = req.body.last_name;
+    let receivedValueOfLastName: lastNameTypeFromZod = req.body.last_name;
 
     if(typeof receivedValueOfLastName !== 'string') {
       receivedValueOfLastName = String(receivedValueOfLastName);

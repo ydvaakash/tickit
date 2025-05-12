@@ -52,7 +52,7 @@
 
 // Zod schema for the "user_password"
 
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 
 const userPasswordZodSchema = z
   .string({

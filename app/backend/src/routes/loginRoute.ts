@@ -50,15 +50,22 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Main router to delegate requests to specific route handlers
+// Handle POST requests to '/login' route
 
 import express, { Router } from 'express';
-import signupRouter from './signupRoute';
-import { loginRouter } from './loginRoute';
+import validateExistanceOfRequestBody from '../middlewares/validateExistanceOfRequestBody';
+import { validateAvailabilityOfLoginCredentials } from '../middlewares/validateAvailabilityOfLoginCredentials';
+import validateEmail from '../middlewares/validateEmail';
+import validateUserPassword from '../middlewares/validateUserPassword';
+import { loginLogic } from '../controllers/loginLogic';
 
-const mainRouter: Router = express.Router();
+const loginRouter: Router = express.Router();
 
-mainRouter.use('/signup', signupRouter);
-mainRouter.use('/login', loginRouter);
+loginRouter.post('/', validateExistanceOfRequestBody,
+  validateAvailabilityOfLoginCredentials,
+  validateEmail,
+  validateUserPassword,
+  loginLogic
+);
 
-export default mainRouter;
+export { loginRouter };
