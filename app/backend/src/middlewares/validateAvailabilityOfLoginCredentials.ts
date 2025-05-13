@@ -50,15 +50,28 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Main router to delegate requests to specific route handlers
+// Middleware to validate if 'body' inside 'req' object has credentials required for 'login' route functionality
 
-import express, { Router } from 'express';
-import signupRouter from './signupRoute';
-import { loginRouter } from './loginRoute';
+import { Request, Response, NextFunction } from 'express';
 
-const mainRouter: Router = express.Router();
+const validateAvailabilityOfLoginCredentials = (req: Request, res: Response, next: NextFunction): void => {
+  // check if 'body' contains 'email'
+  if(req.body.email === undefined || req.body.email === null || req.body.email === '') {
+    res.status(400).json({
+      msg: "Bad request. Empty or missing email in login request."
+    });
+    return ;
+  }
 
-mainRouter.use('/signup', signupRouter);
-mainRouter.use('/login', loginRouter);
+  // check if 'body' contains 'user_password'
+  if(req.body.user_password === undefined || req.body.user_password === null || req.body.user_password === '') {
+    res.status(400).json({
+      msg: "Bad request. Empty or missing user password in the login request."
+    });
+    return ;
+  }
 
-export default mainRouter;
+  return next();
+};
+
+export { validateAvailabilityOfLoginCredentials };

@@ -58,12 +58,13 @@ import { ZodError } from 'zod';
 
 const validateUserPassword = (req: Request, res: Response, next: NextFunction): void => {
   try {
-    userPasswordZodSchema.parse(req.body.user_password);
+    const parsedPassword: string = userPasswordZodSchema.parse(req.body.user_password);
+    req.body.user_password = parsedPassword;
     return next();
-  } catch (err) {
+  } catch (err: any) {
     if(err instanceof ZodError) {
       res.status(400).json({
-        msg: `Bad request. Invalid input 'user_password'. ${err.errors[1].message}`
+        msg: `Bad request. Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
       });
       return ;
     } else {

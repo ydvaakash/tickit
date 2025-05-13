@@ -50,15 +50,34 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Main router to delegate requests to specific route handlers
+// Generate 'refresh-token' with longer validity
 
-import express, { Router } from 'express';
-import signupRouter from './signupRoute';
-import { loginRouter } from './loginRoute';
+import 'dotenv/config';
+import jwt from 'jsonwebtoken';
 
-const mainRouter: Router = express.Router();
+const generateRefreshToken = ( userPublicUid: string ): string => {
+  let finalRefreshToken: string = '';
 
-mainRouter.use('/signup', signupRouter);
-mainRouter.use('/login', loginRouter);
+  const refreshTokenSecretKey: string | undefined = process.env['REFRESHTOKENSECRETKEY'];
+  const refreshTokenIssuer: string | undefined = process.env['REFRESHTOKENISSUER'];
+  const refreshTokenAudience: string | undefined = process.env['REFRESHTOKENAUDIENCE'];
+  const refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'];
 
-export default mainRouter;
+  if(!refreshTokenSecretKey || !refreshTokenIssuer || !refreshTokenAudience || !refreshTokenValidity) {
+    return finalRefreshToken = '';
+  }
+
+  try {
+    finalRefreshToken = jwt.sign({uid: userPublicUid}, refreshTokenSecretKey, {
+      expiresIn: parseInt(refreshTokenValidity),
+      issuer: refreshTokenIssuer,
+      audience: refreshTokenAudience
+    });
+  } catch(err) {
+    finalRefreshToken = '';
+  }
+
+  return finalRefreshToken;
+};
+
+export { generateRefreshToken };
