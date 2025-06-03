@@ -50,54 +50,33 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Generate 'refresh-token' with longer validity
+// Middleware to validate if 'req' object has refresh token
 
-import { v4 as uuidv4 } from 'uuid';
-import 'dotenv/config';
-import jwt from 'jsonwebtoken';
+import { Response, NextFunction } from 'express';
+import { CustomRequest } from '../types/customRequest.interface';
 
-const generateRefreshToken = ( userPublicUid: string ): string => {
-  let finalRefreshToken: string = '';
+const validateAvailabilityOfRefreshToken = (req: CustomRequest, res: Response, next: NextFunction) => {
+  const rawToken = req.cookies.tickitRefreshToken;
+  const refreshToken = typeof rawToken === 'string' ? rawToken.replace(/^['"]+|['"]+$/g, '') : rawToken;
 
-  const refreshTokenSecretKey: string | undefined = process.env['REFRESHTOKENSECRETKEY'];
-  const refreshTokenIssuer: string | undefined = process.env['REFRESHTOKENISSUER'];
-  const refreshTokenAudience: string | undefined = process.env['REFRESHTOKENAUDIENCE'];
-  const refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'];
-
-  if(!refreshTokenSecretKey || !refreshTokenIssuer || !refreshTokenAudience || !refreshTokenValidity) {
-    return finalRefreshToken = '';
-  }
-
-  const jwtid: string = uuidv4();
-  const issuedAt: number = Date.now();
-  
-  const refreshTokenValidityNumeral: number = parseInt(refreshTokenValidity);
-  const refreshTokenValidityMetric: string = refreshTokenValidity.split(refreshTokenValidityNumeral.toString())[1];
-  let expiryDurationInMilliseconds: number = 0;
-
-  if(refreshTokenValidityMetric === "d") {
-    expiryDurationInMilliseconds = refreshTokenValidityNumeral * 24 * 60 * 60 * 1000;
-  } else if(refreshTokenValidityMetric === "m") {
-    expiryDurationInMilliseconds = refreshTokenValidityNumeral * 60 * 1000;
-  }
-
-  const expiresAt: number = issuedAt + expiryDurationInMilliseconds;
-
-  try {
-    finalRefreshToken = jwt.sign({uid: userPublicUid}, refreshTokenSecretKey, {
-      expiresIn: refreshTokenValidity as jwt.SignOptions['expiresIn'],
-      issuer: refreshTokenIssuer,
-      audience: refreshTokenAudience,
-      jwtid: jwtid
+  if(!refreshToken) {
+    res.status(400).json({
+      msg: 'Invalid request. Missing HTTP Cookie details.'
     });
-  } catch(err) {
-    finalRefreshToken = '';
-    return finalRefreshToken;
+    return ;
   }
 
-  // make database call to store refreshToken details in database.
+  // if(req.cookies.tickitRefreshToken === '' || req.cookies.tickitRefreshToken === 'undefined' || req.cookies.tickitRefreshToken === 'null' || req.cookies.tickitRefreshToken.length === 0) {
+  if(refreshToken === '' || refreshToken === "" || refreshToken === 'undefined' || refreshToken === 'null' || refreshToken.length === 0) {
+    res.status(400).json({
+      msg: 'Invalid request. Missing value of HTTP Cookie.'
+    });
+    return ;
+  }
 
-  return finalRefreshToken;
+  req.sanitizedRefreshToken = refreshToken;
+
+  next();
 };
 
-export { generateRefreshToken };
+export { validateAvailabilityOfRefreshToken };

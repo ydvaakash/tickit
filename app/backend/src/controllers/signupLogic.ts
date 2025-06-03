@@ -53,18 +53,17 @@
 // New user signup logic
 
 import { Request, Response } from 'express';
-import pgdbpool from '../database/databasePool';
-import bcrypt from 'bcrypt';
-import { QueryResult } from 'pg';
-import 'dotenv/config';
-import { getStringEnvVar } from '../utils/getStringEnvironmentVariable';
 import { firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
 import { lastNameTypeFromZod } from '../zodSchemas/lastNameZodSchema';
 import { emailTypeFromZod } from '../zodSchemas/emailZodSchema';
 import { userPasswordTypeFromZod } from '../zodSchemas/userPasswordZodSchema';
+import pgdbpool from '../database/databasePool';
+import { QueryResult } from 'pg';
+import { getStringEnvVar } from '../utils/getStringEnvironmentVariable';
+import bcrypt from 'bcrypt';
+import { generateUserPublicUid } from '../utils/generateUserPublicUid';
 import { generateRefreshToken } from '../utils/generateRefreshToken';
 import { generateAccessToken } from '../utils/generateAccessToken';
-import { generateUserPublicUid } from '../utils/generateUserPublicUid';
 
 const signupLogic = async (req: Request, res: Response): Promise<void> => {
   let userSuppliedFirstName: firstNameTypeFromZod = req.body.first_name;
@@ -74,7 +73,7 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
 
   // check if user supplied email is already registered
   try {
-    let countOfAlreadyExistingEmail: QueryResult<{count: string}> = await pgdbpool.query("SELECT COUNT(email) FROM user_details.user_profile_details WHERE email = $1", [userSuppliedEmail]);
+    let countOfAlreadyExistingEmail: QueryResult<{count: string}> = await pgdbpool.query("SELECT COUNT(user_email) FROM user_details.user_profile_details WHERE user_email = $1", [userSuppliedEmail]);
 
     let countOfAlreadyExistingEmailAsNumber: number = parseInt(countOfAlreadyExistingEmail.rows[0].count, 10);
 
@@ -131,16 +130,16 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
   }
 
   let beginTransactionQuery: string = "BEGIN";
-  let insertUserPlatformUidInDb: string = "INSERT INTO user_identification.user_identification_uids (user_platform_uid) VALUES ($1)";
-  let insertUserProfileDetailsInDb: string = "INSERT INTO user_details.user_profile_details (user_platform_uid, first_name, last_name, email) VALUES ($1, $2, $3, $4)";
-  let insertUserPasswordInDb: string = "INSERT INTO user_secrets_credentials.user_passwords (user_platform_uid, user_password) VALUES ($1, $2)";
+  let insertUserProfileDetailsInDb: string = "INSERT INTO user_details.user_profile_details (user_platform_uid, first_name, last_name, user_email) VALUES ($1, $2, $3, $4)";
+  let insertUserPlatformUidInDb: string = "INSERT INTO user_platformuid_publicuid_mapping.user_platformuid_publicuid_mapping_details (user_platform_uid) VALUES ($1)";
+  let insertUserPasswordInDb: string = "INSERT INTO user_secret_credentials.user_passwords (user_platform_uid, user_password) VALUES ($1, $2)";
   let updateTotalRegisteredUserCountInDb: string = "UPDATE total_metrics.total_metrics_data SET total_registered_users_count=$1 WHERE total_metrics_data_id = 1";
   let endTransactionQuery: string = 'COMMIT';
 
   try {
     await pgdbpool.query(beginTransactionQuery);
-    await pgdbpool.query(insertUserPlatformUidInDb, [generatedUserPlatformUid]);
     await pgdbpool.query(insertUserProfileDetailsInDb, [generatedUserPlatformUid, userSuppliedFirstName, userSuppliedLastName, userSuppliedEmail]);
+    await pgdbpool.query(insertUserPlatformUidInDb, [generatedUserPlatformUid]);
     await pgdbpool.query(insertUserPasswordInDb, [generatedUserPlatformUid, hashedPassword]);
     await pgdbpool.query(updateTotalRegisteredUserCountInDb, [totalRegisteredUserCountValueForUsing+1]);
     await pgdbpool.query(endTransactionQuery);
@@ -161,13 +160,11 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
     return ;
   }
 
-  let insertUserPublicUidInDb: string = "UPDATE user_identification.user_identification_uids SET user_public_uid=$1 WHERE user_platform_uid=$2";
-  let updateUserPublicUidValidityFlagInDb: string = "UPDATE user_identification.user_identification_uids SET user_public_uid_validity_flag=$1 WHERE user_public_uid=$2";
+  let insertUserPublicUidInDb: string = "UPDATE user_platformuid_publicuid_mapping.user_platformuid_publicuid_mapping_details SET user_public_uid=$1 WHERE user_platform_uid=$2";
 
   try {
     await pgdbpool.query(beginTransactionQuery);
     await pgdbpool.query(insertUserPublicUidInDb, [hashedUserPublicUid, generatedUserPlatformUid]);
-    await pgdbpool.query(updateUserPublicUidValidityFlagInDb, ["valid", hashedUserPublicUid]);
     await pgdbpool.query(endTransactionQuery);
   } catch(err) {
     await pgdbpool.query("ROLLBACK");
@@ -209,6 +206,6 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
   });
 
   return ;
-}
+};
 
-export default signupLogic;
+export { signupLogic };

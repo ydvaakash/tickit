@@ -53,7 +53,7 @@
 // Handle POST requests to '/signup' route
 
 import express, { Router } from 'express';
-import signupLogic from '../controllers/signupLogic';
+import { signupLogic } from '../controllers/signupLogic';
 import validateExistanceOfRequestBody from '../middlewares/validateExistanceOfRequestBody';
 import validateAvailabilityOfSignupCredentials from '../middlewares/validateAvailabilityOfSignupCredentials';
 import validateFirstName from '../middlewares/validateFirstName';
@@ -72,4 +72,4 @@ signupRouter.post('/', validateExistanceOfRequestBody,
   signupLogic
 );
 
-export default signupRouter;
+export { signupRouter };

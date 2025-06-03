@@ -53,12 +53,14 @@
 // Main router to delegate requests to specific route handlers
 
 import express, { Router } from 'express';
-import signupRouter from './signupRoute';
+import { signupRouter } from './signupRoute';
 import { loginRouter } from './loginRoute';
+import { logoutRouter } from './logoutRoute';
 
 const mainRouter: Router = express.Router();
 
 mainRouter.use('/signup', signupRouter);
 mainRouter.use('/login', loginRouter);
+mainRouter.use('/logout', logoutRouter);
 
 export default mainRouter;

@@ -69,7 +69,7 @@ const generateAccessToken = (userPublicUid: string): string => {
 
   try {
     finalAccessToken = jwt.sign({uid: userPublicUid}, accessTokenSecretKey, {
-      expiresIn: parseInt(accessTokenValidity),
+      expiresIn: accessTokenValidity as jwt.SignOptions['expiresIn'],
       issuer: accessTokenIssuer,
       audience: accessTokenAudience
     });

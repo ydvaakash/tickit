@@ -53,6 +53,7 @@
 // Create the Express Server
 
 import express, { Express } from 'express';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import mainRouter from './routes/mainRouter';
 import validateRequestHeader from './middlewares/validateRequestHeader';
@@ -61,6 +62,8 @@ import globalErrorHandler from './middlewares/globalErrorHandler';
 const expressApp: Express = express();
 
 expressApp.use(express.json());   // parse json requests
+
+expressApp.use(cookieParser());
 
 expressApp.use(express.urlencoded({extended: true}));
 
