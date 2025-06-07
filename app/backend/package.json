@@ -1,6 +1,6 @@
 {
   "name": "@ydvaakash/tickit-backend",
-  "private": "true",
+  "private": true,
   "version": "0.1.0",
   "description": "Backend server powering the Tickit web app.",
   "main": "dist/index.js",
