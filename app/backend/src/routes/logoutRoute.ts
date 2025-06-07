@@ -50,54 +50,22 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Generate 'refresh-token' with longer validity
+// Handle POST requests to '/logout' route
 
-import { v4 as uuidv4 } from 'uuid';
-import 'dotenv/config';
-import jwt from 'jsonwebtoken';
+import express, { Router } from 'express';
+import validateExistanceOfRequestBody from '../middlewares/validateExistanceOfRequestBody';
+import { validateAvailabilityOfRefreshToken } from '../middlewares/validateAvailabilityOfRefreshToken';
+import { validateAvailabilityOfAccessToken } from '../middlewares/validateAvailabilityOfAccessToken';
+import { checkIfRefreshTokenIsValid } from '../middlewares/checkIfRefreshTokenIsValid';
+import { checkIfAccessTokenIsValid } from '../middlewares/checkIfAccessTokenIsValid';
 
-const generateRefreshToken = ( userPublicUid: string ): string => {
-  let finalRefreshToken: string = '';
+const logoutRouter: Router = express.Router();
 
-  const refreshTokenSecretKey: string | undefined = process.env['REFRESHTOKENSECRETKEY'];
-  const refreshTokenIssuer: string | undefined = process.env['REFRESHTOKENISSUER'];
-  const refreshTokenAudience: string | undefined = process.env['REFRESHTOKENAUDIENCE'];
-  const refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'];
+logoutRouter.post('/', validateExistanceOfRequestBody,
+  validateAvailabilityOfRefreshToken,
+  validateAvailabilityOfAccessToken,
+  checkIfRefreshTokenIsValid,
+  checkIfAccessTokenIsValid
+);
 
-  if(!refreshTokenSecretKey || !refreshTokenIssuer || !refreshTokenAudience || !refreshTokenValidity) {
-    return finalRefreshToken = '';
-  }
-
-  const jwtid: string = uuidv4();
-  const issuedAt: number = Date.now();
-  
-  const refreshTokenValidityNumeral: number = parseInt(refreshTokenValidity);
-  const refreshTokenValidityMetric: string = refreshTokenValidity.split(refreshTokenValidityNumeral.toString())[1];
-  let expiryDurationInMilliseconds: number = 0;
-
-  if(refreshTokenValidityMetric === "d") {
-    expiryDurationInMilliseconds = refreshTokenValidityNumeral * 24 * 60 * 60 * 1000;
-  } else if(refreshTokenValidityMetric === "m") {
-    expiryDurationInMilliseconds = refreshTokenValidityNumeral * 60 * 1000;
-  }
-
-  const expiresAt: number = issuedAt + expiryDurationInMilliseconds;
-
-  try {
-    finalRefreshToken = jwt.sign({uid: userPublicUid}, refreshTokenSecretKey, {
-      expiresIn: refreshTokenValidity as jwt.SignOptions['expiresIn'],
-      issuer: refreshTokenIssuer,
-      audience: refreshTokenAudience,
-      jwtid: jwtid
-    });
-  } catch(err) {
-    finalRefreshToken = '';
-    return finalRefreshToken;
-  }
-
-  // make database call to store refreshToken details in database.
-
-  return finalRefreshToken;
-};
-
-export { generateRefreshToken };
+export { logoutRouter };

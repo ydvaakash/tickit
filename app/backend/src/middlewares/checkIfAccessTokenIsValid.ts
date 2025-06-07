@@ -50,54 +50,47 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Generate 'refresh-token' with longer validity
+// Middleware to check if Access Token is valid
 
-import { v4 as uuidv4 } from 'uuid';
+import { Response, NextFunction } from 'express';
+import { CustomRequest } from '../types/customRequest.interface';
 import 'dotenv/config';
 import jwt from 'jsonwebtoken';
 
-const generateRefreshToken = ( userPublicUid: string ): string => {
-  let finalRefreshToken: string = '';
+const checkIfAccessTokenIsValid = (req: CustomRequest, res: Response, next: NextFunction) => {
+  const accessTokenValueToCheck: string | undefined = req.sanitizedAccessToken;
+  const accessTokenSecretKey: string | undefined = process.env['ACCESSTOKENSECRETKEY'];
 
-  const refreshTokenSecretKey: string | undefined = process.env['REFRESHTOKENSECRETKEY'];
-  const refreshTokenIssuer: string | undefined = process.env['REFRESHTOKENISSUER'];
-  const refreshTokenAudience: string | undefined = process.env['REFRESHTOKENAUDIENCE'];
-  const refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'];
-
-  if(!refreshTokenSecretKey || !refreshTokenIssuer || !refreshTokenAudience || !refreshTokenValidity) {
-    return finalRefreshToken = '';
+  if(!accessTokenSecretKey) {
+    res.status(500).json({
+      msg: "Internal server error. Missing access token secret key in environment variables."
+    });
+    return ;
   }
 
-  const jwtid: string = uuidv4();
-  const issuedAt: number = Date.now();
-  
-  const refreshTokenValidityNumeral: number = parseInt(refreshTokenValidity);
-  const refreshTokenValidityMetric: string = refreshTokenValidity.split(refreshTokenValidityNumeral.toString())[1];
-  let expiryDurationInMilliseconds: number = 0;
-
-  if(refreshTokenValidityMetric === "d") {
-    expiryDurationInMilliseconds = refreshTokenValidityNumeral * 24 * 60 * 60 * 1000;
-  } else if(refreshTokenValidityMetric === "m") {
-    expiryDurationInMilliseconds = refreshTokenValidityNumeral * 60 * 1000;
+  if(!accessTokenValueToCheck || accessTokenValueToCheck === 'undefined') {
+    res.status(401).json({
+      msg: "Bad request. Missing access token."
+    });
+    return ;
   }
-
-  const expiresAt: number = issuedAt + expiryDurationInMilliseconds;
 
   try {
-    finalRefreshToken = jwt.sign({uid: userPublicUid}, refreshTokenSecretKey, {
-      expiresIn: refreshTokenValidity as jwt.SignOptions['expiresIn'],
-      issuer: refreshTokenIssuer,
-      audience: refreshTokenAudience,
-      jwtid: jwtid
-    });
-  } catch(err) {
-    finalRefreshToken = '';
-    return finalRefreshToken;
+    jwt.verify(accessTokenValueToCheck, accessTokenSecretKey);
+  } catch (err: any) {
+    if (err.name === 'TokenExpiredError') {
+      res.status(403).json({
+        msg: "Expired access token"
+      });
+      return ;
+    } else {
+      res.status(403).json({
+        msg: "Invalid access token"
+      });
+      return ;
+    }
   }
 
-  // make database call to store refreshToken details in database.
-
-  return finalRefreshToken;
 };
 
-export { generateRefreshToken };
+export { checkIfAccessTokenIsValid };

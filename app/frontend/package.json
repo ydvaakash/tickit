@@ -1,0 +1,76 @@
+{
+  "name": "@ydvaakash/tickit-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Frontend client for the Tickit web app.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "author": {
+    "name": "Aakash Yadav",
+    "github": "https://github.com/ydvaakash"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ydvaakash/tickit.git"
+  },
+  "keywords": [
+    "todo-app",
+    "task-manager",
+    "react",
+    "typescript",
+    "vite",
+    "recoil",
+    "tailwindcss",
+    "frontend",
+    "full-stack",
+    "fullstack",
+    "webapp",
+    "todo",
+    "task-manager",
+    "state-management",
+    "react-router-dom",
+    "vite-react",
+    "react-typescript",
+    "responsive-ui",
+    "spa",
+    "single-page-application",
+    "component-based",
+    "modern-javascript",
+    "frontend-architecture",
+    "ui-development",
+    "client-side",
+    "frontend-project",
+    "tickit",
+    "tickit-frontend",
+    "Aakash Yadav",
+    "ydvaakash",
+    "web-app",
+    "modern-web-app"
+  ],
+  "license": "Proprietary",
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.8",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "recoil": "^0.7.7",
+    "tailwindcss": "^4.1.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.30.1",
+    "vite": "^6.3.5"
+  }
+}

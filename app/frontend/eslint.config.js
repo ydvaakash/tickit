@@ -50,54 +50,31 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Generate 'refresh-token' with longer validity
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
 
-import { v4 as uuidv4 } from 'uuid';
-import 'dotenv/config';
-import jwt from 'jsonwebtoken';
-
-const generateRefreshToken = ( userPublicUid: string ): string => {
-  let finalRefreshToken: string = '';
-
-  const refreshTokenSecretKey: string | undefined = process.env['REFRESHTOKENSECRETKEY'];
-  const refreshTokenIssuer: string | undefined = process.env['REFRESHTOKENISSUER'];
-  const refreshTokenAudience: string | undefined = process.env['REFRESHTOKENAUDIENCE'];
-  const refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'];
-
-  if(!refreshTokenSecretKey || !refreshTokenIssuer || !refreshTokenAudience || !refreshTokenValidity) {
-    return finalRefreshToken = '';
-  }
-
-  const jwtid: string = uuidv4();
-  const issuedAt: number = Date.now();
-  
-  const refreshTokenValidityNumeral: number = parseInt(refreshTokenValidity);
-  const refreshTokenValidityMetric: string = refreshTokenValidity.split(refreshTokenValidityNumeral.toString())[1];
-  let expiryDurationInMilliseconds: number = 0;
-
-  if(refreshTokenValidityMetric === "d") {
-    expiryDurationInMilliseconds = refreshTokenValidityNumeral * 24 * 60 * 60 * 1000;
-  } else if(refreshTokenValidityMetric === "m") {
-    expiryDurationInMilliseconds = refreshTokenValidityNumeral * 60 * 1000;
-  }
-
-  const expiresAt: number = issuedAt + expiryDurationInMilliseconds;
-
-  try {
-    finalRefreshToken = jwt.sign({uid: userPublicUid}, refreshTokenSecretKey, {
-      expiresIn: refreshTokenValidity as jwt.SignOptions['expiresIn'],
-      issuer: refreshTokenIssuer,
-      audience: refreshTokenAudience,
-      jwtid: jwtid
-    });
-  } catch(err) {
-    finalRefreshToken = '';
-    return finalRefreshToken;
-  }
-
-  // make database call to store refreshToken details in database.
-
-  return finalRefreshToken;
-};
-
-export { generateRefreshToken };
+export default tseslint.config(
+  { ignores: ['dist'] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+    plugins: {
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
+    },
+  },
+)

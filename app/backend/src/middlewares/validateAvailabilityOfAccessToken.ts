@@ -50,54 +50,42 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Generate 'refresh-token' with longer validity
+// Middleware to validate if 'req' object has access token
 
-import { v4 as uuidv4 } from 'uuid';
-import 'dotenv/config';
-import jwt from 'jsonwebtoken';
+import { Response, NextFunction } from 'express';
+import { CustomRequest } from '../types/customRequest.interface';
 
-const generateRefreshToken = ( userPublicUid: string ): string => {
-  let finalRefreshToken: string = '';
-
-  const refreshTokenSecretKey: string | undefined = process.env['REFRESHTOKENSECRETKEY'];
-  const refreshTokenIssuer: string | undefined = process.env['REFRESHTOKENISSUER'];
-  const refreshTokenAudience: string | undefined = process.env['REFRESHTOKENAUDIENCE'];
-  const refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'];
-
-  if(!refreshTokenSecretKey || !refreshTokenIssuer || !refreshTokenAudience || !refreshTokenValidity) {
-    return finalRefreshToken = '';
-  }
-
-  const jwtid: string = uuidv4();
-  const issuedAt: number = Date.now();
+const validateAvailabilityOfAccessToken = (req: CustomRequest, res: Response, next: NextFunction) => {
+  const accessToken = req.headers.authorization;
   
-  const refreshTokenValidityNumeral: number = parseInt(refreshTokenValidity);
-  const refreshTokenValidityMetric: string = refreshTokenValidity.split(refreshTokenValidityNumeral.toString())[1];
-  let expiryDurationInMilliseconds: number = 0;
-
-  if(refreshTokenValidityMetric === "d") {
-    expiryDurationInMilliseconds = refreshTokenValidityNumeral * 24 * 60 * 60 * 1000;
-  } else if(refreshTokenValidityMetric === "m") {
-    expiryDurationInMilliseconds = refreshTokenValidityNumeral * 60 * 1000;
-  }
-
-  const expiresAt: number = issuedAt + expiryDurationInMilliseconds;
-
-  try {
-    finalRefreshToken = jwt.sign({uid: userPublicUid}, refreshTokenSecretKey, {
-      expiresIn: refreshTokenValidity as jwt.SignOptions['expiresIn'],
-      issuer: refreshTokenIssuer,
-      audience: refreshTokenAudience,
-      jwtid: jwtid
+  if(!accessToken) {
+    res.status(401).json({
+      msg: "Bad request. Missing authorization header."
     });
-  } catch(err) {
-    finalRefreshToken = '';
-    return finalRefreshToken;
+    return;
   }
 
-  // make database call to store refreshToken details in database.
+  if(!accessToken.startsWith('Bearer ')) {
+    res.status(401).json({
+      msg: "Bad request. Invalid authorization header."
+    });
+    return ;
+  }
 
-  return finalRefreshToken;
+  const accessTokenValue = accessToken.split(" ")[1];
+
+  const sanitizedAccessTokenValue = typeof accessTokenValue === 'string' ? accessTokenValue.replace(/^['"]+|['"]+$/g, '') : accessTokenValue;
+
+  if(sanitizedAccessTokenValue === '' || sanitizedAccessTokenValue === "" || sanitizedAccessTokenValue === 'undefined' || sanitizedAccessTokenValue === 'null' || sanitizedAccessTokenValue.length === 0) {
+    res.status(401).json({
+      msg: "Bad request. Invalid value in authorization header."
+    });
+    return ;
+  }
+
+  req.sanitizedAccessToken = sanitizedAccessTokenValue;
+
+  next();
 };
 
-export { generateRefreshToken };
+export { validateAvailabilityOfAccessToken };

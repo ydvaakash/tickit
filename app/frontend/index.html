@@ -1,4 +1,5 @@
-/* Copyright (c) Aakash Yadav. All rights reserved.
+<!--
+ Copyright (c) Aakash Yadav. All rights reserved.
 
  This file is part of **Tickit**, owned and operated by **Aakash Yadav**.
  The source code, documentation, and all associated files (collectively, the **"Software"**) are the **proprietary property** of **Aakash Yadav** and are protected by **international copyright laws**, including but not limited to:
@@ -48,56 +49,18 @@
  Any **unauthorized** attempt to **access, modify, copy, distribute, or exploit** the Software will be considered a **direct violation of copyright laws** and will be subject to **strict legal action** under applicable **local, national, and international laws**.
 
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
-*/
+ -->
 
-// Generate 'refresh-token' with longer validity
-
-import { v4 as uuidv4 } from 'uuid';
-import 'dotenv/config';
-import jwt from 'jsonwebtoken';
-
-const generateRefreshToken = ( userPublicUid: string ): string => {
-  let finalRefreshToken: string = '';
-
-  const refreshTokenSecretKey: string | undefined = process.env['REFRESHTOKENSECRETKEY'];
-  const refreshTokenIssuer: string | undefined = process.env['REFRESHTOKENISSUER'];
-  const refreshTokenAudience: string | undefined = process.env['REFRESHTOKENAUDIENCE'];
-  const refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'];
-
-  if(!refreshTokenSecretKey || !refreshTokenIssuer || !refreshTokenAudience || !refreshTokenValidity) {
-    return finalRefreshToken = '';
-  }
-
-  const jwtid: string = uuidv4();
-  const issuedAt: number = Date.now();
-  
-  const refreshTokenValidityNumeral: number = parseInt(refreshTokenValidity);
-  const refreshTokenValidityMetric: string = refreshTokenValidity.split(refreshTokenValidityNumeral.toString())[1];
-  let expiryDurationInMilliseconds: number = 0;
-
-  if(refreshTokenValidityMetric === "d") {
-    expiryDurationInMilliseconds = refreshTokenValidityNumeral * 24 * 60 * 60 * 1000;
-  } else if(refreshTokenValidityMetric === "m") {
-    expiryDurationInMilliseconds = refreshTokenValidityNumeral * 60 * 1000;
-  }
-
-  const expiresAt: number = issuedAt + expiryDurationInMilliseconds;
-
-  try {
-    finalRefreshToken = jwt.sign({uid: userPublicUid}, refreshTokenSecretKey, {
-      expiresIn: refreshTokenValidity as jwt.SignOptions['expiresIn'],
-      issuer: refreshTokenIssuer,
-      audience: refreshTokenAudience,
-      jwtid: jwtid
-    });
-  } catch(err) {
-    finalRefreshToken = '';
-    return finalRefreshToken;
-  }
-
-  // make database call to store refreshToken details in database.
-
-  return finalRefreshToken;
-};
-
-export { generateRefreshToken };
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
