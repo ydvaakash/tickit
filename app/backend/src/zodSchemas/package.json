@@ -1,0 +1,34 @@
+{
+  "name": "@ydvaakash/tickit-zod-schemas",
+  "version": "0.1.2",
+  "description": "Reusable Zod validation schemas for signup/login, shared across frontend and backend.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [
+    "zod",
+    "schema",
+    "typescript",
+    "validation",
+    "frontend",
+    "backend",
+    "fullstack",
+    "ydvaakash",
+    "react",
+    "express"
+  ],
+  "author": "Aakash Yadav (https://github.com/ydvaakash)",
+  "license": "Proprietary",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ydvaakash/tickit.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "zod": "^3.22.2"
+  }
+}

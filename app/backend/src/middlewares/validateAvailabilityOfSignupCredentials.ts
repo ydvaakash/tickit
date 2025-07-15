@@ -57,32 +57,32 @@ import { Request, Response, NextFunction } from 'express';
 const validateAvailabilityOfSignupCredentials = (req: Request, res: Response, next: NextFunction): void => {
   // check if 'body' contains 'first_name'
   if(req.body.first_name === undefined || req.body.first_name === null || req.body.first_name === '') {
-    res.status(400).json({
-      msg: "Bad request. Empty or missing first_name in signup request."
+    res.status(422).json({
+      msg: "Missing signup credentials. Empty or missing first_name in signup request."
     });
     return ;
   }
 
   // check if 'body' contains 'last_name'
   if(req.body.last_name === undefined || req.body.last_name === null || req.body.last_name === '') {
-    res.status(400).json({
-      msg: "Bad request. Empty or missing last_name in signup request."
+    res.status(422).json({
+      msg: "Missing signup credentials. Empty or missing last_name in signup request."
     });
     return ;
   }
 
   // check if 'body' contains 'email'
   if(req.body.email === undefined || req.body.email === null || req.body.email === '') {
-    res.status(400).json({
-      msg: "Bad request. Empty or missing email in signup request."
+    res.status(422).json({
+      msg: "Missing signup credentials. Empty or missing email in signup request."
     });
     return ;
   }
 
   // check if 'body' contains 'password'
   if(req.body.user_password === undefined || req.body.user_password === null || req.body.user_password === '') {
-    res.status(400).json({
-      msg: "Bad request. Empty or missing password in signup request."
+    res.status(422).json({
+      msg: "Missing signup credentials. Empty or missing password in signup request."
     });
     return ;
   }

@@ -1,0 +1,11 @@
+# This file is part of Tickit, owned and operated by Aakash Yadav.
+# It defines files and directories that should be excluded from the npm package.
+
+*.ts              # Exclude top-level TypeScript files
+tsconfig.json     # Exclude TypeScript config
+src/              # Exclude source folder, if you create one later
+node_modules/     # Always exclude
+npm-debug.log*
+*.log
+.vscode/
+.idea/

@@ -54,11 +54,18 @@
   ],
   "license": "Proprietary",
   "dependencies": {
+    "@hookform/resolvers": "^5.1.1",
     "@tailwindcss/vite": "^4.1.8",
+    "@ydvaakash/tickit-zod-schemas": "^0.1.2",
+    "axios": "^1.10.0",
+    "dotenv": "^17.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-hook-form": "^7.58.1",
+    "react-router-dom": "^7.6.2",
     "recoil": "^0.7.7",
-    "tailwindcss": "^4.1.8"
+    "tailwindcss": "^4.1.8",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

@@ -64,7 +64,7 @@ const validateEmail = (req: Request, res: Response, next: NextFunction): void =>
     if(err instanceof ZodError) {
       const errorMessage = err.errors.map(e => e.message).join(", ");
       res.status(400).json({
-        msg: `Bad request. Invalid input 'email'. ${errorMessage}`
+        msg: `Invalid signup credentials input. Invalid input 'email'. ${errorMessage}`
       });
       return ;
     } else {

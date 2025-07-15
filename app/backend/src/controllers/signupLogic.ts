@@ -78,14 +78,14 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
     let countOfAlreadyExistingEmailAsNumber: number = parseInt(countOfAlreadyExistingEmail.rows[0].count, 10);
 
     if(countOfAlreadyExistingEmailAsNumber !== 0) {
-      res.status(200).json({
+      res.status(409).json({
         msg: "Email already registered. Please use a different email ID, or visit login page to access your account."
       });
       return ;
     }
   } catch(err) {
-    res.status(500).json({
-      msg: "Server error. Couldn't get details from database."
+    res.status(503).json({
+      msg: "Service unavailable. Couldn't get details from database."
     });
     return ;
   }
@@ -102,8 +102,8 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
 
     totalRegisteredUserCountValueForUsing = totalRegisteredUserCountFromDb.rows[0].total_registered_users_count;
   } catch(err) {
-    res.status(500).json({
-      msg: "Server error. Couldn't fetch value from database."
+    res.status(503).json({
+      msg: "Service unavailable. Couldn't fetch value from database."
     });
     return ;
   }
@@ -115,7 +115,7 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
   const bcryptSaltRounds: string = getStringEnvVar('BCRYPTSALTROUNDS');
   if(bcryptSaltRounds === '') {
     res.status(500).json({
-      msg: 'Internal server error. Missing value for \'salt rounds\' to hash user password.'
+      msg: 'Server error. Missing value for \'salt rounds\' to hash user password.'
     });
     return ;
   }
@@ -145,8 +145,8 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
     await pgdbpool.query(endTransactionQuery);
   } catch(err) {
     await pgdbpool.query('ROLLBACK');
-    res.status(500).json({
-      msg: 'Server error. Database entries failed.'
+    res.status(503).json({
+      msg: 'Service unavailable. Database entries failed.'
     });
     return ;
   }
@@ -155,7 +155,7 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
   const hashedUserPublicUid: string = await generateUserPublicUid(bcryptSaltRoundsAsNumber);
   if(hashedUserPublicUid === '') {
     res.status(500).json({
-      msg: 'Internal server error. Couldn\'t generate hashed user public uid.'
+      msg: 'Server error. Couldn\'t generate hashed user public uid.'
     });
     return ;
   }
@@ -168,8 +168,8 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
     await pgdbpool.query(endTransactionQuery);
   } catch(err) {
     await pgdbpool.query("ROLLBACK");
-    res.status(500).json({
-      msg: "Signup completed successfully. But server error happened while trying to generate public UID for the user."
+    res.status(508).json({
+      msg: "Server error. Signup completed successfully. But server error happened while trying to generate public UID for the user."
     });
     return ;
   }
@@ -178,8 +178,8 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
   let refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'];
 
   if(!refreshTokenValidity || (refreshTokenForUser === '')) {
-    res.status(500).json({
-      msg: 'Internal server error. Couldn\'t generate refresh token for user.'
+    res.status(508).json({
+      msg: 'Server error. Couldn\'t generate refresh token for user.'
     });
     return ;
   }
@@ -187,8 +187,8 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
   const accessTokenForUser: string = generateAccessToken(hashedUserPublicUid);
 
   if(accessTokenForUser === '') {
-    res.status(500).json({
-      msg: 'Internal server error. Couldn\'t generate access token for user.'
+    res.status(508).json({
+      msg: 'Server error. Couldn\'t generate access token for user.'
     });
     return ;
   }
