@@ -50,27 +50,20 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate 'user_password'
+// SignupPage component
 
-import { Request, Response, NextFunction} from 'express';
-import { userPasswordZodSchema } from '../zodSchemas/userPasswordZodSchema';
-import { ZodError } from 'zod';
+import { HeaderLayout } from "../layouts/HeaderLayout";
+import { SignupPageLayout } from "../layouts/SignupPageLayout";
+import { FooterLayout } from "../layouts/FooterLayout";
 
-const validateUserPassword = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    const parsedPassword: string = userPasswordZodSchema.parse(req.body.user_password);
-    req.body.user_password = parsedPassword;
-    return next();
-  } catch (err: any) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
-      });
-      return ;
-    } else {
-      return next(err);
-    }
-  }
-};
+function SignupPage() {
+  return (
+    <div className="w-full min-h-screen flex flex-col items-center">
+      <HeaderLayout />
+      <SignupPageLayout />
+      <FooterLayout />
+    </div>
+  )
+}
 
-export default validateUserPassword;
+export { SignupPage };

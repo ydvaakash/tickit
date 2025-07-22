@@ -50,27 +50,31 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate 'user_password'
+// serverError Redux Slice
 
-import { Request, Response, NextFunction} from 'express';
-import { userPasswordZodSchema } from '../zodSchemas/userPasswordZodSchema';
-import { ZodError } from 'zod';
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
 
-const validateUserPassword = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    const parsedPassword: string = userPasswordZodSchema.parse(req.body.user_password);
-    req.body.user_password = parsedPassword;
-    return next();
-  } catch (err: any) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
-      });
-      return ;
-    } else {
-      return next(err);
-    }
+interface ServerErrorState {
+  serverErrorMessage: string
+}
+
+const initialState: ServerErrorState = {
+  serverErrorMessage: "",
+}
+
+const serverErrorSlice = createSlice({
+  name: 'serverError',
+  initialState,
+  reducers: {
+    setServerError: (state, action: PayloadAction<string>) => {
+      state.serverErrorMessage = action.payload;
+    },
+    clearServerError: (state) => {
+      state.serverErrorMessage = "";
+    },
   }
-};
+});
 
-export default validateUserPassword;
+export const { setServerError, clearServerError } = serverErrorSlice.actions;
+export default serverErrorSlice.reducer;

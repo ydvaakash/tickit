@@ -55,7 +55,7 @@
 import { Response, NextFunction } from 'express';
 import { CustomRequest } from '../types/customRequest.interface';
 
-const validateAvailabilityOfAccessToken = (req: CustomRequest, res: Response, next: NextFunction) => {
+const validateAvailabilityOfAccessToken = (req: CustomRequest, res: Response, next: NextFunction): void => {
   const accessToken = req.headers.authorization;
   
   if(!accessToken) {

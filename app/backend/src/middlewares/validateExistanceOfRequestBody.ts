@@ -57,7 +57,7 @@ import { Request, Response, NextFunction } from 'express';
 const validateExistanceOfRequestBody = (req: Request, res: Response, next: NextFunction): void => {
   // check if 'body' exists and is not empty
   if(!req.body || Object.keys(req.body).length === 0) {
-    res.status(400).json({msg: "Bad request. Empty or missing 'body' in 'req'."});
+    res.status(403).json({msg: "Forbidden: Request tampered"});
     return ;
   }
 

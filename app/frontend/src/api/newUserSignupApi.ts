@@ -50,27 +50,20 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate 'user_password'
+// API to send new user signup request to backend server using Axios instance
 
-import { Request, Response, NextFunction} from 'express';
-import { userPasswordZodSchema } from '../zodSchemas/userPasswordZodSchema';
-import { ZodError } from 'zod';
+import type { firstNameTypeFromZod, lastNameTypeFromZod, emailTypeFromZod, userPasswordTypeFromZod } from '@ydvaakash/tickit-zod-schemas';
+import { axiosInstance } from './axiosInstance';
+import type { newUserSignupApiAxiosResponseType } from '../types/newUserSignupApiAxiosResponseType';
 
-const validateUserPassword = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    const parsedPassword: string = userPasswordZodSchema.parse(req.body.user_password);
-    req.body.user_password = parsedPassword;
-    return next();
-  } catch (err: any) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
-      });
-      return ;
-    } else {
-      return next(err);
-    }
-  }
-};
+const newUserSignupApi = async (first_name: firstNameTypeFromZod, last_name: lastNameTypeFromZod, email: emailTypeFromZod, user_password: userPasswordTypeFromZod): Promise<newUserSignupApiAxiosResponseType> => {
+  const responseFromBackend: newUserSignupApiAxiosResponseType = await axiosInstance.post('/signup', {
+    first_name,
+    last_name,
+    email,
+    user_password
+  })
+  return responseFromBackend;
+}
 
-export default validateUserPassword;
+export { newUserSignupApi };

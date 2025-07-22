@@ -50,27 +50,17 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate 'user_password'
+// Header Layout Component
 
-import { Request, Response, NextFunction} from 'express';
-import { userPasswordZodSchema } from '../zodSchemas/userPasswordZodSchema';
-import { ZodError } from 'zod';
+import Cropped_Tickit_BnW_Logo_Resized from '../assets/Cropped_Tickit_BnW_Logo_Resized.png';
 
-const validateUserPassword = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    const parsedPassword: string = userPasswordZodSchema.parse(req.body.user_password);
-    req.body.user_password = parsedPassword;
-    return next();
-  } catch (err: any) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
-      });
-      return ;
-    } else {
-      return next(err);
-    }
-  }
-};
+function HeaderLayout() {
+  return (
+    <div className="w-full h-auto px-3 md:px-4 lg:px-5 xl:px-6 2xl:px-7 3xl:px-8 4xl:px-9 py-4 flex flex-row flex-wrap items-center justify-between">
+      <img src={Cropped_Tickit_BnW_Logo_Resized} alt="Tickit Logo" className='size-[40px] md:size-[50px] lg:size-[60px] xl:size-[70px] 2xl:size-[80px] 3xl:size-[90px] 4xl:size-[100px]'/>
+      <button type='button' className='border-1 rounded-lg px-2 py-2 md:px-3 lg:px-4 xl:px-5 xl:py-3 2xl:px-6 text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl 3xl:text-2xl'>Login</button>
+    </div>
+  )
+}
 
-export default validateUserPassword;
+export { HeaderLayout };
