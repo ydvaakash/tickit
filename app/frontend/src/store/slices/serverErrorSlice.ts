@@ -50,15 +50,31 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-import { SignupForm } from "../components/auth/SignupForm";
-import { Heading } from "../components/common/Heading";
+// serverError Redux Slice
 
-function AuthLayout() {
-  return  <>
-    <p>This is from Auth Layout.</p>
-    <Heading content="Get started with Tickit" />
-    <SignupForm />
-  </>
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
+
+interface ServerErrorState {
+  serverErrorMessage: string
 }
 
-export { AuthLayout };
+const initialState: ServerErrorState = {
+  serverErrorMessage: "",
+}
+
+const serverErrorSlice = createSlice({
+  name: 'serverError',
+  initialState,
+  reducers: {
+    setServerError: (state, action: PayloadAction<string>) => {
+      state.serverErrorMessage = action.payload;
+    },
+    clearServerError: (state) => {
+      state.serverErrorMessage = "";
+    },
+  }
+});
+
+export const { setServerError, clearServerError } = serverErrorSlice.actions;
+export default serverErrorSlice.reducer;

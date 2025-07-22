@@ -50,20 +50,25 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// API to send new user signup request to backend server using Axios instance
+// Footer Layout Component
 
-import type { firstNameTypeFromZod, lastNameTypeFromZod, emailTypeFromZod, userPasswordTypeFromZod } from '@ydvaakash/tickit-zod-schemas';
-import { axiosInstance } from './axiosInstance';
-import type { newUserSignupApiAxiosResponseType } from '../types/newUserSignupApiAxiosResponseType';
-
-const newUserSignupApi = async (first_name: firstNameTypeFromZod, last_name: lastNameTypeFromZod, email: emailTypeFromZod, user_password: userPasswordTypeFromZod): Promise<newUserSignupApiAxiosResponseType> => {
-  const responseFromBackend: newUserSignupApiAxiosResponseType = await axiosInstance.post('/signup', {
-    first_name,
-    last_name,
-    email,
-    user_password
-  })
-  return responseFromBackend;
+function FooterLayout() {
+  return (
+    <div className="w-full h-auto mb-0 flex flex-col content-center justify-center">
+      <div className="flex flex-row justify-between">
+        <div className="">
+          Designed and Developed by Aakash Yadav
+        </div>
+        <div className="flex flex-col">
+          <a href="#">View GitHub Repo</a>
+          <a href="#">Connect on LinkedIn</a>
+        </div>
+      </div>
+      <div className="text-center">
+        License, Privacy Policy, and Disclaimer
+      </div>
+    </div>
+  )
 }
 
-export { newUserSignupApi };
+export { FooterLayout }

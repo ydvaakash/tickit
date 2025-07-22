@@ -50,20 +50,22 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// API to send new user signup request to backend server using Axios instance
+// Form input field error messages
 
-import type { firstNameTypeFromZod, lastNameTypeFromZod, emailTypeFromZod, userPasswordTypeFromZod } from '@ydvaakash/tickit-zod-schemas';
-import { axiosInstance } from './axiosInstance';
-import type { newUserSignupApiAxiosResponseType } from '../types/newUserSignupApiAxiosResponseType';
+function FormInputFieldErrorMessage({errorMessage}: {errorMessage: string | null}) {
+  if(!errorMessage) {
+    return (
+      <p className="w-full py-2">
+        {''}
+      </p>
+    );
+  }
 
-const newUserSignupApi = async (first_name: firstNameTypeFromZod, last_name: lastNameTypeFromZod, email: emailTypeFromZod, user_password: userPasswordTypeFromZod): Promise<newUserSignupApiAxiosResponseType> => {
-  const responseFromBackend: newUserSignupApiAxiosResponseType = await axiosInstance.post('/signup', {
-    first_name,
-    last_name,
-    email,
-    user_password
-  })
-  return responseFromBackend;
+  return (
+    <div>
+      <p>{errorMessage}</p>
+    </div>
+  )
 }
 
-export { newUserSignupApi };
+export { FormInputFieldErrorMessage };

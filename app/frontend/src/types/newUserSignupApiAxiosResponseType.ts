@@ -50,11 +50,20 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-import { atom } from "recoil";
+// Type of new user signup api axios response object
 
-const serverErrorAtom = atom({
-  key: 'serverError',
-  default: ''
-});
+import type { AxiosRequestConfig, AxiosResponseHeaders, AxiosResponse } from "axios";
 
-export { serverErrorAtom };
+type newUserSignupApiAxiosResponseType = {
+  data: {
+    msg: string;
+    accessToken?: string;
+  };
+  status: number;
+  statusText: string;
+  headers: AxiosResponseHeaders;
+  config: AxiosRequestConfig;
+  request: AxiosResponse['request'];
+}
+
+export type { newUserSignupApiAxiosResponseType };

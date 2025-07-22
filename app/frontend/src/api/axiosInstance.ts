@@ -50,8 +50,9 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
+// Axios instance
+
 import axios from "axios";
-// import 'dotenv/config'
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BACKENDBASEURL,

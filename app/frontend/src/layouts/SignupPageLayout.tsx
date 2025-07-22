@@ -50,20 +50,18 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// API to send new user signup request to backend server using Axios instance
+// Signup Page Layout
 
-import type { firstNameTypeFromZod, lastNameTypeFromZod, emailTypeFromZod, userPasswordTypeFromZod } from '@ydvaakash/tickit-zod-schemas';
-import { axiosInstance } from './axiosInstance';
-import type { newUserSignupApiAxiosResponseType } from '../types/newUserSignupApiAxiosResponseType';
+import { SignupForm } from "../components/auth/SignupForm";
+import { Heading } from "../components/common/Heading";
 
-const newUserSignupApi = async (first_name: firstNameTypeFromZod, last_name: lastNameTypeFromZod, email: emailTypeFromZod, user_password: userPasswordTypeFromZod): Promise<newUserSignupApiAxiosResponseType> => {
-  const responseFromBackend: newUserSignupApiAxiosResponseType = await axiosInstance.post('/signup', {
-    first_name,
-    last_name,
-    email,
-    user_password
-  })
-  return responseFromBackend;
+function SignupPageLayout() {
+  return (
+    <div className="w-full flex flex-1 flex-col items-center justify-center px-3 md:px-4 lg:px-5 xl:px-6 2xl:px-7 3xl:px-8 4xl:px-9 py-4">
+      <Heading content="Get started with Tickit" />
+      <SignupForm />
+    </div>
+  )
 }
 
-export { newUserSignupApi };
+export { SignupPageLayout };

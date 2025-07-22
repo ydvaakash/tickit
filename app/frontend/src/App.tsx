@@ -50,17 +50,21 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
+// App component
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './styles/App.css'
 import { SignupPage } from './pages/SignupPage'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path='/signup' element={<SignupPage/>} />
-      </Routes>
-    </BrowserRouter>
+    <div className='w-full min-h-screen'>
+      <BrowserRouter>
+        <Routes>
+          <Route path='/signup' element={<SignupPage/>} />
+        </Routes>
+      </BrowserRouter>
+    </div>
   )
 }
 

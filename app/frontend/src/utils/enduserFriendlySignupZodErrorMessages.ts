@@ -50,6 +50,8 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
+// End user friendly New User Signup Zod Error Messages
+
 type ErrorMapping = Record<string, Record<string, string>>;
 
 const userFriendlyMessages: ErrorMapping = {

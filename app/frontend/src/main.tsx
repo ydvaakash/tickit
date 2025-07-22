@@ -54,12 +54,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles/index.css'
 import App from './App.tsx'
-import { RecoilRoot } from 'recoil'
+import { store } from './store/store.ts'
+import { Provider } from 'react-redux';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RecoilRoot>
+    <Provider store={store}>
       <App />
-    </RecoilRoot>
+    </Provider>
   </StrictMode>,
 )

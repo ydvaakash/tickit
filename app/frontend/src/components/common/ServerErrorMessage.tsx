@@ -50,12 +50,14 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-import { useRecoilValue } from "recoil";
-import { serverErrorAtom } from "../../store/atoms/serverError";
+// ServerErrorMessage component
+
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store/store";
 
 function ServerErrorMessage() {
-  const serverErrorText = useRecoilValue(serverErrorAtom);
-  
+  const serverErrorText = useSelector((state: RootState) => state.serverError.serverErrorMessage);
+
   return <>
     <p>{serverErrorText}</p>
   </>

@@ -50,14 +50,20 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
+// SignupPage component
+
 import { HeaderLayout } from "../layouts/HeaderLayout";
-import { AuthLayout } from "../layouts/AuthLayout";
+import { SignupPageLayout } from "../layouts/SignupPageLayout";
+import { FooterLayout } from "../layouts/FooterLayout";
 
 function SignupPage() {
-  return <>
-    <HeaderLayout />
-    <AuthLayout />
-  </>
+  return (
+    <div className="w-full min-h-screen flex flex-col items-center">
+      <HeaderLayout />
+      <SignupPageLayout />
+      <FooterLayout />
+    </div>
+  )
 }
 
 export { SignupPage };

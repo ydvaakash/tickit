@@ -50,20 +50,19 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// API to send new user signup request to backend server using Axios instance
+// Configure Redux Store
 
-import type { firstNameTypeFromZod, lastNameTypeFromZod, emailTypeFromZod, userPasswordTypeFromZod } from '@ydvaakash/tickit-zod-schemas';
-import { axiosInstance } from './axiosInstance';
-import type { newUserSignupApiAxiosResponseType } from '../types/newUserSignupApiAxiosResponseType';
+import { configureStore } from '@reduxjs/toolkit';
+import serverErrorSliceReducer from './slices/serverErrorSlice';
 
-const newUserSignupApi = async (first_name: firstNameTypeFromZod, last_name: lastNameTypeFromZod, email: emailTypeFromZod, user_password: userPasswordTypeFromZod): Promise<newUserSignupApiAxiosResponseType> => {
-  const responseFromBackend: newUserSignupApiAxiosResponseType = await axiosInstance.post('/signup', {
-    first_name,
-    last_name,
-    email,
-    user_password
-  })
-  return responseFromBackend;
-}
+const store = configureStore({
+  reducer: {
+    serverError: serverErrorSliceReducer,
+  },
+});
 
-export { newUserSignupApi };
+export { store };
+
+export type RootState = ReturnType<typeof store.getState>;
+
+export type AppDispatch = typeof store.dispatch;

@@ -55,7 +55,7 @@
 import { Response, NextFunction } from 'express';
 import { CustomRequest } from '../types/customRequest.interface';
 
-const validateAvailabilityOfRefreshToken = (req: CustomRequest, res: Response, next: NextFunction) => {
+const validateAvailabilityOfRefreshToken = (req: CustomRequest, res: Response, next: NextFunction): void => {
   const rawToken = req.cookies.tickitRefreshToken;
   const refreshToken = typeof rawToken === 'string' ? rawToken.replace(/^['"]+|['"]+$/g, '') : rawToken;
 
@@ -66,7 +66,6 @@ const validateAvailabilityOfRefreshToken = (req: CustomRequest, res: Response, n
     return ;
   }
 
-  // if(req.cookies.tickitRefreshToken === '' || req.cookies.tickitRefreshToken === 'undefined' || req.cookies.tickitRefreshToken === 'null' || req.cookies.tickitRefreshToken.length === 0) {
   if(refreshToken === '' || refreshToken === "" || refreshToken === 'undefined' || refreshToken === 'null' || refreshToken.length === 0) {
     res.status(400).json({
       msg: 'Invalid request. Missing value of HTTP Cookie.'

@@ -50,6 +50,8 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
+// Configure database pool
+
 import { Pool, PoolConfig } from "pg";
 import { getStringEnvVar } from '../utils/getStringEnvironmentVariable';
 

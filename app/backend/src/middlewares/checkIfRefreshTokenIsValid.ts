@@ -57,9 +57,8 @@ import { CustomRequest } from '../types/customRequest.interface';
 import 'dotenv/config';
 import jwt from 'jsonwebtoken';
 
-const checkIfRefreshTokenIsValid = (req: CustomRequest, res: Response, next: NextFunction) => {
+const checkIfRefreshTokenIsValid = (req: CustomRequest, res: Response, next: NextFunction): void => {
   const refreshTokenValueToCheck: string | undefined = req.sanitizedRefreshToken;
-  // const refreshTokenSecretKey = process.env.REFRESHTOKENSECRETKEY;
   const refreshTokenSecretKey: string | undefined = process.env['REFRESHTOKENSECRETKEY'];
   if(!refreshTokenSecretKey) {
     res.status(500).json({

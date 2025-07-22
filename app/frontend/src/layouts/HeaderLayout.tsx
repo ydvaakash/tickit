@@ -50,10 +50,17 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
+// Header Layout Component
+
+import Cropped_Tickit_BnW_Logo_Resized from '../assets/Cropped_Tickit_BnW_Logo_Resized.png';
+
 function HeaderLayout() {
-  return <>
-    This is from Header.
-  </>
+  return (
+    <div className="w-full h-auto px-3 md:px-4 lg:px-5 xl:px-6 2xl:px-7 3xl:px-8 4xl:px-9 py-4 flex flex-row flex-wrap items-center justify-between">
+      <img src={Cropped_Tickit_BnW_Logo_Resized} alt="Tickit Logo" className='size-[40px] md:size-[50px] lg:size-[60px] xl:size-[70px] 2xl:size-[80px] 3xl:size-[90px] 4xl:size-[100px]'/>
+      <button type='button' className='border-1 rounded-lg px-2 py-2 md:px-3 lg:px-4 xl:px-5 xl:py-3 2xl:px-6 text-xs md:text-sm lg:text-base xl:text-lg 2xl:text-xl 3xl:text-2xl'>Login</button>
+    </div>
+  )
 }
 
 export { HeaderLayout };

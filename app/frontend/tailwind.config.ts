@@ -50,20 +50,21 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// API to send new user signup request to backend server using Axios instance
+import type { Config } from 'tailwindcss'
 
-import type { firstNameTypeFromZod, lastNameTypeFromZod, emailTypeFromZod, userPasswordTypeFromZod } from '@ydvaakash/tickit-zod-schemas';
-import { axiosInstance } from './axiosInstance';
-import type { newUserSignupApiAxiosResponseType } from '../types/newUserSignupApiAxiosResponseType';
-
-const newUserSignupApi = async (first_name: firstNameTypeFromZod, last_name: lastNameTypeFromZod, email: emailTypeFromZod, user_password: userPasswordTypeFromZod): Promise<newUserSignupApiAxiosResponseType> => {
-  const responseFromBackend: newUserSignupApiAxiosResponseType = await axiosInstance.post('/signup', {
-    first_name,
-    last_name,
-    email,
-    user_password
-  })
-  return responseFromBackend;
-}
-
-export { newUserSignupApi };
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    screens: {
+      sm: '480px',
+      md: '768px',
+      lg: '976px',
+      xl: '1440px',
+    },
+    extend: {},
+  },
+  plugins: [],
+} satisfies Config

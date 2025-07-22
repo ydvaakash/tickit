@@ -50,14 +50,18 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
+// Heading component
+
 type HeadingContent = {
   content: string;
 };
 
 function Heading({ content }: HeadingContent) {
-  return <>
-    <h1>{content}</h1>
-  </>
+  return (
+    <div className='w-full text-center text-wrap text-base lg:text-2xl'>
+      <h1>{content}</h1>
+    </div>
+  )
 }
 
 export { Heading };

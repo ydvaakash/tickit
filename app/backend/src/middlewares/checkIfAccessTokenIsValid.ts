@@ -57,7 +57,7 @@ import { CustomRequest } from '../types/customRequest.interface';
 import 'dotenv/config';
 import jwt from 'jsonwebtoken';
 
-const checkIfAccessTokenIsValid = (req: CustomRequest, res: Response, next: NextFunction) => {
+const checkIfAccessTokenIsValid = (req: CustomRequest, res: Response, next: NextFunction): void => {
   const accessTokenValueToCheck: string | undefined = req.sanitizedAccessToken;
   const accessTokenSecretKey: string | undefined = process.env['ACCESSTOKENSECRETKEY'];
 
