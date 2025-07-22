@@ -50,27 +50,25 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate 'user_password'
+// Footer Layout Component
 
-import { Request, Response, NextFunction} from 'express';
-import { userPasswordZodSchema } from '../zodSchemas/userPasswordZodSchema';
-import { ZodError } from 'zod';
+function FooterLayout() {
+  return (
+    <div className="w-full h-auto mb-0 flex flex-col content-center justify-center">
+      <div className="flex flex-row justify-between">
+        <div className="">
+          Designed and Developed by Aakash Yadav
+        </div>
+        <div className="flex flex-col">
+          <a href="#">View GitHub Repo</a>
+          <a href="#">Connect on LinkedIn</a>
+        </div>
+      </div>
+      <div className="text-center">
+        License, Privacy Policy, and Disclaimer
+      </div>
+    </div>
+  )
+}
 
-const validateUserPassword = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    const parsedPassword: string = userPasswordZodSchema.parse(req.body.user_password);
-    req.body.user_password = parsedPassword;
-    return next();
-  } catch (err: any) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
-      });
-      return ;
-    } else {
-      return next(err);
-    }
-  }
-};
-
-export default validateUserPassword;
+export { FooterLayout }

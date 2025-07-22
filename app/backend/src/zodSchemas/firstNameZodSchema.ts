@@ -54,7 +54,10 @@
 
 import { z } from "zod";
 
-  const firstNameZodSchema = z.string()
+  const firstNameZodSchema = z.string({
+    required_error: "First name is required.", // This is triggered if field is completely missing (e.g. undefined)
+    invalid_type_error: "First name must be a string"
+  })
 
   .trim()
 

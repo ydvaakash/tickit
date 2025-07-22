@@ -49,3 +49,17 @@
 
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
+
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  padding: 0;
+  border: none;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+html, #root {
+  height: 100%;
+}

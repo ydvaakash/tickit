@@ -62,7 +62,7 @@ const validateFirstName = (req: Request, res: Response, next: NextFunction): voi
 
     if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
       res.status(400).json({
-        msg: `Bad request. first_name can not be null or undefined.`
+        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
       });
       return ;
     }
@@ -74,7 +74,7 @@ const validateFirstName = (req: Request, res: Response, next: NextFunction): voi
 
       if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
         res.status(400).json({
-          msg: 'Bad request. first_name must be a valid text value.'
+          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
         });
         return ;
       } else {
@@ -85,7 +85,7 @@ const validateFirstName = (req: Request, res: Response, next: NextFunction): voi
   } catch(err) {
     if(err instanceof ZodError) {
       res.status(400).json({
-        msg: `Bad request. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
+        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
       });
       return ;
     } else {
