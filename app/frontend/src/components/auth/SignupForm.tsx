@@ -86,7 +86,7 @@ const signupFormInputFieldsCombinedSchema = z.object({
 });
 
 function SignupForm() {
-  const { register, handleSubmit, formState: {errors} } = useForm<signupFormFieldsType>({
+  const { register, handleSubmit, setValue, formState: {errors} } = useForm<signupFormFieldsType>({
     resolver: zodResolver(signupFormInputFieldsCombinedSchema),
     mode: "onSubmit",
     reValidateMode: "onSubmit"
@@ -94,9 +94,7 @@ function SignupForm() {
 
   const dispatch = useDispatch();
 
-  const submitSignupForm = async (formData: signupFormFieldsType) => {
-    dispatch(setServerError(""));
-
+  const submitSignupForm = async (formData: signupFormFieldsType): Promise<void> => {
     try {
       const resultFromBackend: newUserSignupApiAxiosResponseType = await newUserSignupApi(
         formData.first_name,
@@ -104,6 +102,10 @@ function SignupForm() {
         formData.email,
         formData.user_password
       );
+      setValue('first_name', "");
+      setValue('last_name', "");
+      setValue('email', "");
+      setValue('user_password', "");
       console.log('Signup form submitted successfully', resultFromBackend);
     } catch(err: unknown) {      
       if(axios.isAxiosError(err)) {
@@ -144,7 +146,13 @@ function SignupForm() {
 
   return (
     <div className='flex flex-col'>
-      <form className='flex flex-col' id='signupform' onSubmit={handleSubmit(submitSignupForm)}>
+      {/* <form className='flex flex-col' id='signupform' onSubmit={handleSubmit(submitSignupForm)}> */}
+      <form className='flex flex-col' id='signupform' onSubmit={(e) => {
+          e.preventDefault();
+          dispatch(setServerError(""));
+          handleSubmit(submitSignupForm)(e);
+          setValue('user_password', "");
+        }}>
         <input type='text' className='signup-form-input-field' id='firstNameInputBox' {...register("first_name")} autoComplete='on' autoFocus placeholder='First name'></input>
         {/* {errors.first_name && errors.first_name.message} */}
         {/* {errors.first_name && enduserFriendlySignupZodErrorMessages('first_name', errors.first_name.message)} */}

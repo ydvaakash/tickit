@@ -53,7 +53,6 @@
 // Existing user login logic
 
 import { Request, Response } from 'express';
-import { LoginRequestBody } from '../types/authRequestBodies';
 import { emailTypeFromZod } from '../zodSchemas/emailZodSchema';
 import { userPasswordTypeFromZod } from '../zodSchemas/userPasswordZodSchema';
 import pgdbpool from '../database/databasePool';
@@ -64,13 +63,13 @@ import { generateAccessToken } from '../utils/generateAccessToken';
 import { generateUserPublicUid } from '../utils/generateUserPublicUid';
 import { getStringEnvVar } from '../utils/getStringEnvironmentVariable';
 
-const loginLogic = async (req: Request<{}, {}, LoginRequestBody>, res: Response): Promise<void> => {
+const loginLogic = async (req: Request, res: Response): Promise<void> => {
   let userSuppliedEmail: emailTypeFromZod = req.body.email;
   let userSuppliedUserPassword: userPasswordTypeFromZod = req.body.user_password;
 
-  let checkExistanceOfUserSuppliedEmailInDb: string = 'SELECT user_platform_uid FROM user_details.user_profile_details WHERE email=$1';
+  let checkExistanceOfUserSuppliedEmailInDb: string = 'SELECT user_platform_uid FROM user_details.user_profile_details WHERE user_email=$1';
 
-  type userPlatformUid = {
+  type userPlatformUidType = {
     user_platform_uid: string
   }
 
@@ -78,10 +77,10 @@ const loginLogic = async (req: Request<{}, {}, LoginRequestBody>, res: Response)
 
   // check if 'userSuppliedEmail' exists in the database. If yes, fetch 'user_platform_uid' for the user from database
   try {
-    let userPlatformUidRow: QueryResult<userPlatformUid> = await pgdbpool.query(checkExistanceOfUserSuppliedEmailInDb, [userSuppliedEmail]);
+    let userPlatformUidRow: QueryResult<userPlatformUidType> = await pgdbpool.query(checkExistanceOfUserSuppliedEmailInDb, [userSuppliedEmail]);
 
     if(userPlatformUidRow.rowCount === 0) {
-      res.status(200).json({
+      res.status(401).json({
         msg: 'No registered user found with provided email id.'
       });
       return ;
@@ -89,25 +88,25 @@ const loginLogic = async (req: Request<{}, {}, LoginRequestBody>, res: Response)
 
     userPlatformUid = userPlatformUidRow.rows[0].user_platform_uid;
   } catch (err) {
-    res.status(500).json({
+    res.status(503).json({
       msg: 'Internal server error. Error occured while trying to find user email ID in database.'
     });
     return ;
   }
 
   let userHashedPassword: string = '';
-  let fetchHashedUserPasswordFromDb: string = 'SELECT user_password FROM user_secrets_credentials.user_passwords WHERE user_platform_uid=$1';
+  let fetchHashedUserPasswordFromDb: string = 'SELECT user_password FROM user_secret_credentials.user_passwords WHERE user_platform_uid=$1';
 
-  type userHashedPassword = {
+  type userHashedPasswordType = {
     user_password: string
   }
 
   // fetch hashed password from database for the user
   try {
-    let userHashedPasswordRow: QueryResult<userHashedPassword> = await pgdbpool.query(fetchHashedUserPasswordFromDb, [userPlatformUid]);
+    let userHashedPasswordRow: QueryResult<userHashedPasswordType> = await pgdbpool.query(fetchHashedUserPasswordFromDb, [userPlatformUid]);
     userHashedPassword = userHashedPasswordRow.rows[0].user_password;
   } catch (err) {
-    res.status(500).json({
+    res.status(503).json({
       msg: 'Internal server error. Error occured while trying to fetch user hashed password from the database.'
     });
     return ;
@@ -174,15 +173,22 @@ const loginLogic = async (req: Request<{}, {}, LoginRequestBody>, res: Response)
     return;
   }
 
+  // check if value of refresh token validity available as environment variable
+  let refreshTokenValidity: string = getStringEnvVar("REFRESHTOKENVALIDITY");
+  if(refreshTokenValidity === '') {
+    res.status(500).json({
+      msg: 'Internal server error. Missing value of environment variable for \'refresh token validity\'.'
+    });
+    return ;
+  }
+
   // update Public UID of user in database
   const beginTransactionQuery: string = 'BEGIN';
-  const updatePublicUidOfUserInDb: string = 'UPDATE user_identification.user_identification_uids SET user_public_uid=$1 WHERE user_platform_uid=$2';
-  const updateUserPublicUidValidityFlagInDb: string = 'UPDATE user_identification.user_identification_uids SET user_public_uid_validity_flag=$1 WHERE user_platform_uid=$2';
+  const updatePublicUidOfUserInDb: string = 'UPDATE user_platformuid_publicuid_mapping.user_platformuid_publicuid_mapping_details SET user_public_uid=$1 WHERE user_platform_uid=$2';
   const endTransactionQuery: string = 'COMMIT';
   try {
     await pgdbpool.query(beginTransactionQuery);
     await pgdbpool.query(updatePublicUidOfUserInDb, [hashedUserPublicUid, userPlatformUid]);
-    await pgdbpool.query(updateUserPublicUidValidityFlagInDb, ["valid", userPlatformUid]);
     await pgdbpool.query(endTransactionQuery);
   } catch(err) {
     await pgdbpool.query("ROLLBACK");
@@ -193,14 +199,6 @@ const loginLogic = async (req: Request<{}, {}, LoginRequestBody>, res: Response)
   }
 
   // set refresh token as HTTP cookie in user browser
-  let refreshTokenValidity: string = getStringEnvVar("REFRESHTOKENVALIDITY");
-  if(refreshTokenValidity === '') {
-    res.status(500).json({
-      msg: 'Internal server error. Missing value of environment variable for \'refresh token validity\'.'
-    });
-    return ;
-  }
-
   res.cookie("tickitRefreshToken", refreshTokenForUser, {
     httpOnly: true,
     // secure: true,

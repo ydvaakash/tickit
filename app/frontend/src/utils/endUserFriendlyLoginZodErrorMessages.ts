@@ -50,31 +50,41 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate 'user_password'
+// End user friendly existing user login Zod Error Messages
 
-import { Request, Response, NextFunction} from 'express';
-import { userPasswordZodSchema } from '../zodSchemas/userPasswordZodSchema';
-import { ZodError } from 'zod';
+type typeForEndUserFriendlyLoginErrorMessages = Record<string, Record<string, string>>
 
-const validateUserPassword = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    const parsedPassword: string = userPasswordZodSchema.parse(req.body.user_password);
-    req.body.user_password = parsedPassword;
-    return next();
-  } catch (err: any) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-<<<<<<< HEAD
-        msg: `Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
-=======
-        msg: `Invalid signup credentials input. Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
->>>>>>> origin/development
-      });
-      return ;
-    } else {
-      return next(err);
-    }
+const endUserFriendlyLoginErrorMessages: typeForEndUserFriendlyLoginErrorMessages = {
+  email: {
+    "Email field is required": "Email is missing",
+    "Email must be a string": "Invalid input",
+    "Email must be in a valid format (e.g., user@domain.com).": "Invalid email syntax",
+    "Email cannot contain spaces.": "Invalid input",
+    "Email must not exceed 254 characters.": "Invalid input",
+    "Email username must not exceed 64 characters.": "Invalid input",
+    "Email cannot contain consecutive dots, hyphens, or underscores.": "Invalid input",
+    "Email username cannot start with a special character.": "Invalid input",
+    "Email username cannot end with a special character.": "Invalid input"
+  },
+  user_password: {
+    "Password is required": "Password is missing",
+    "Password must be a string": "Invalid input",
+    "Password must be at least 8 characters long.": "Password too short",
+    "Password must not exceed 26 characters.": "Password too long",
+    "Password must contain at least one number (0–9).": "Password missing atleast one digit",
+    "Password must contain at least one lowercase letter (a–z).": "Password missing atleast one lowercase letter",
+    "Password must contain at least one uppercase letter (A–Z).": "Password missing atleast one uppercase letter",
+    "Password can only include letters, numbers, and these special characters: @ # $ % & *": "Allowed special characters: @ # $ % & *",
+    "Password must not contain any whitespace characters.": "Whitespaces not allowed",
+    "Password must not contain the same character repeated 3 or more times in a row.": "Invalid input"
   }
 };
 
-export default validateUserPassword;
+function endUserFriendlyLoginZodErrorMessages(fieldName: string, errorMessage?: string ): string | null {
+  if(!errorMessage) {
+    return null;
+  }
+  return endUserFriendlyLoginErrorMessages[fieldName]?.[errorMessage] || 'Invalid Input';
+}
+
+export { endUserFriendlyLoginZodErrorMessages };

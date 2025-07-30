@@ -50,31 +50,18 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate 'user_password'
+// Login Page Layout
 
-import { Request, Response, NextFunction} from 'express';
-import { userPasswordZodSchema } from '../zodSchemas/userPasswordZodSchema';
-import { ZodError } from 'zod';
+import { Heading } from "../components/common/Heading";
+import { LoginForm } from "../components/auth/LoginForm";
 
-const validateUserPassword = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    const parsedPassword: string = userPasswordZodSchema.parse(req.body.user_password);
-    req.body.user_password = parsedPassword;
-    return next();
-  } catch (err: any) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-<<<<<<< HEAD
-        msg: `Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
-=======
-        msg: `Invalid signup credentials input. Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
->>>>>>> origin/development
-      });
-      return ;
-    } else {
-      return next(err);
-    }
-  }
-};
+function LoginPageLayout() {
+  return (
+    <div className="w-full flex flex-1 flex-col items-center justify-center px-3 md:px-4 lg:px-5 xl:px-6 2xl:px-7 3xl:px-8 4xl:px-9 py-4">
+      <Heading content="Login to Tickit" />
+      <LoginForm />
+    </div>
+  )
+}
 
-export default validateUserPassword;
+export { LoginPageLayout };

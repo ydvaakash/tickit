@@ -57,16 +57,16 @@ import { Request, Response, NextFunction } from 'express';
 const validateAvailabilityOfLoginCredentials = (req: Request, res: Response, next: NextFunction): void => {
   // check if 'body' contains 'email'
   if(req.body.email === undefined || req.body.email === null || req.body.email === '') {
-    res.status(400).json({
-      msg: "Bad request. Empty or missing email in login request."
+    res.status(422).json({
+      msg: "Missing login credentials. Empty or missing email in login request."
     });
     return ;
   }
 
   // check if 'body' contains 'user_password'
   if(req.body.user_password === undefined || req.body.user_password === null || req.body.user_password === '') {
-    res.status(400).json({
-      msg: "Bad request. Empty or missing user password in the login request."
+    res.status(422).json({
+      msg: "Missing login credentials. Empty or missing user password in login request."
     });
     return ;
   }

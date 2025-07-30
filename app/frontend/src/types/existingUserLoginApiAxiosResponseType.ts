@@ -50,31 +50,20 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate 'user_password'
+// Type of existing user signup api axios response object
 
-import { Request, Response, NextFunction} from 'express';
-import { userPasswordZodSchema } from '../zodSchemas/userPasswordZodSchema';
-import { ZodError } from 'zod';
+import type { AxiosRequestConfig, AxiosResponseHeaders, AxiosResponse } from "axios";
 
-const validateUserPassword = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    const parsedPassword: string = userPasswordZodSchema.parse(req.body.user_password);
-    req.body.user_password = parsedPassword;
-    return next();
-  } catch (err: any) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-<<<<<<< HEAD
-        msg: `Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
-=======
-        msg: `Invalid signup credentials input. Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
->>>>>>> origin/development
-      });
-      return ;
-    } else {
-      return next(err);
-    }
-  }
-};
+type existingUserLoginApiAxiosResponseType = {
+  data: {
+    msg: string;
+    accessToken?: string;
+  };
+  status: number;
+  statusText: string;
+  headers: AxiosResponseHeaders;
+  config: AxiosRequestConfig;
+  request: AxiosResponse['request'];
+}
 
-export default validateUserPassword;
+export type { existingUserLoginApiAxiosResponseType };

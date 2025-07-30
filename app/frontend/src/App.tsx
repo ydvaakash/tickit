@@ -55,17 +55,19 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './styles/App.css'
 import { SignupPage } from './pages/SignupPage'
+import { LoginPage } from './pages/LoginPage'
 
 function App() {
   return (
     <div className='w-full min-h-screen'>
       <BrowserRouter>
         <Routes>
-          <Route path='/signup' element={<SignupPage/>} />
+          <Route path='/signup' element={<SignupPage />} />
+          <Route path='/login' element={<LoginPage />} />
         </Routes>
       </BrowserRouter>
     </div>
   )
 }
 
-export default App
+export default App;
