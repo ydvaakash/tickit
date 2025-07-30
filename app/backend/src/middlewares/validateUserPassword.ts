@@ -64,7 +64,11 @@ const validateUserPassword = (req: Request, res: Response, next: NextFunction): 
   } catch (err: any) {
     if(err instanceof ZodError) {
       res.status(400).json({
+<<<<<<< HEAD
         msg: `Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
+=======
+        msg: `Invalid signup credentials input. Invalid input 'user_password'. ${err.errors[0]?.message ?? 'Validation failed.'}`
+>>>>>>> origin/development
       });
       return ;
     } else {
