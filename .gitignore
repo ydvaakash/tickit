@@ -68,6 +68,7 @@ dump.sql
 # Frontend build output (Vite)
 frontend/dist/
 frontend/.vite/
+.vite/
 
 # Frontend environment files
 frontend/.env

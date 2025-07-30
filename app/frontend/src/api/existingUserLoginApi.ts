@@ -50,24 +50,19 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// App component
+// API to send existing user login request to backend server using Axios instance
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './styles/App.css'
-import { SignupPage } from './pages/SignupPage'
-import { LoginPage } from './pages/LoginPage'
+import type { emailTypeFromZod, userPasswordTypeFromZod } from "@ydvaakash/tickit-zod-schemas";
+import { axiosInstance } from "./axiosInstance";
+import type { existingUserLoginApiAxiosResponseType } from "../types/existingUserLoginApiAxiosResponseType";
 
-function App() {
-  return (
-    <div className='w-full min-h-screen'>
-      <BrowserRouter>
-        <Routes>
-          <Route path='/signup' element={<SignupPage />} />
-          <Route path='/login' element={<LoginPage />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
-  )
+const existingUserLoginApi = async (email: emailTypeFromZod, user_password: userPasswordTypeFromZod): Promise<existingUserLoginApiAxiosResponseType> => {
+  const loginResponseFromBackend: existingUserLoginApiAxiosResponseType = await axiosInstance.post('/login', {
+    email,
+    user_password
+  });
+
+  return loginResponseFromBackend;
 }
 
-export default App;
+export { existingUserLoginApi };

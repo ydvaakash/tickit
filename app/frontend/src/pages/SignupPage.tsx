@@ -55,8 +55,18 @@
 import { HeaderLayout } from "../layouts/HeaderLayout";
 import { SignupPageLayout } from "../layouts/SignupPageLayout";
 import { FooterLayout } from "../layouts/FooterLayout";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { setServerError } from "../store/slices/serverErrorSlice";
 
 function SignupPage() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(setServerError(""));
+    document.title = "Tickit - Signup";
+  });
+
   return (
     <div className="w-full min-h-screen flex flex-col items-center">
       <HeaderLayout />

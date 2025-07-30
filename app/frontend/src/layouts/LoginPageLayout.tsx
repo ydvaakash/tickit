@@ -50,24 +50,18 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// App component
+// Login Page Layout
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './styles/App.css'
-import { SignupPage } from './pages/SignupPage'
-import { LoginPage } from './pages/LoginPage'
+import { Heading } from "../components/common/Heading";
+import { LoginForm } from "../components/auth/LoginForm";
 
-function App() {
+function LoginPageLayout() {
   return (
-    <div className='w-full min-h-screen'>
-      <BrowserRouter>
-        <Routes>
-          <Route path='/signup' element={<SignupPage />} />
-          <Route path='/login' element={<LoginPage />} />
-        </Routes>
-      </BrowserRouter>
+    <div className="w-full flex flex-1 flex-col items-center justify-center px-3 md:px-4 lg:px-5 xl:px-6 2xl:px-7 3xl:px-8 4xl:px-9 py-4">
+      <Heading content="Login to Tickit" />
+      <LoginForm />
     </div>
   )
 }
 
-export default App;
+export { LoginPageLayout };

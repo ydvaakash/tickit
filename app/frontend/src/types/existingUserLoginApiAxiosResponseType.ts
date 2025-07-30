@@ -50,24 +50,20 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// App component
+// Type of existing user signup api axios response object
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './styles/App.css'
-import { SignupPage } from './pages/SignupPage'
-import { LoginPage } from './pages/LoginPage'
+import type { AxiosRequestConfig, AxiosResponseHeaders, AxiosResponse } from "axios";
 
-function App() {
-  return (
-    <div className='w-full min-h-screen'>
-      <BrowserRouter>
-        <Routes>
-          <Route path='/signup' element={<SignupPage />} />
-          <Route path='/login' element={<LoginPage />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
-  )
+type existingUserLoginApiAxiosResponseType = {
+  data: {
+    msg: string;
+    accessToken?: string;
+  };
+  status: number;
+  statusText: string;
+  headers: AxiosResponseHeaders;
+  config: AxiosRequestConfig;
+  request: AxiosResponse['request'];
 }
 
-export default App;
+export type { existingUserLoginApiAxiosResponseType };

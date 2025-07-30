@@ -50,24 +50,41 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// App component
+// End user friendly existing user login Zod Error Messages
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './styles/App.css'
-import { SignupPage } from './pages/SignupPage'
-import { LoginPage } from './pages/LoginPage'
+type typeForEndUserFriendlyLoginErrorMessages = Record<string, Record<string, string>>
 
-function App() {
-  return (
-    <div className='w-full min-h-screen'>
-      <BrowserRouter>
-        <Routes>
-          <Route path='/signup' element={<SignupPage />} />
-          <Route path='/login' element={<LoginPage />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
-  )
+const endUserFriendlyLoginErrorMessages: typeForEndUserFriendlyLoginErrorMessages = {
+  email: {
+    "Email field is required": "Email is missing",
+    "Email must be a string": "Invalid input",
+    "Email must be in a valid format (e.g., user@domain.com).": "Invalid email syntax",
+    "Email cannot contain spaces.": "Invalid input",
+    "Email must not exceed 254 characters.": "Invalid input",
+    "Email username must not exceed 64 characters.": "Invalid input",
+    "Email cannot contain consecutive dots, hyphens, or underscores.": "Invalid input",
+    "Email username cannot start with a special character.": "Invalid input",
+    "Email username cannot end with a special character.": "Invalid input"
+  },
+  user_password: {
+    "Password is required": "Password is missing",
+    "Password must be a string": "Invalid input",
+    "Password must be at least 8 characters long.": "Password too short",
+    "Password must not exceed 26 characters.": "Password too long",
+    "Password must contain at least one number (0–9).": "Password missing atleast one digit",
+    "Password must contain at least one lowercase letter (a–z).": "Password missing atleast one lowercase letter",
+    "Password must contain at least one uppercase letter (A–Z).": "Password missing atleast one uppercase letter",
+    "Password can only include letters, numbers, and these special characters: @ # $ % & *": "Allowed special characters: @ # $ % & *",
+    "Password must not contain any whitespace characters.": "Whitespaces not allowed",
+    "Password must not contain the same character repeated 3 or more times in a row.": "Invalid input"
+  }
+};
+
+function endUserFriendlyLoginZodErrorMessages(fieldName: string, errorMessage?: string ): string | null {
+  if(!errorMessage) {
+    return null;
+  }
+  return endUserFriendlyLoginErrorMessages[fieldName]?.[errorMessage] || 'Invalid Input';
 }
 
-export default App;
+export { endUserFriendlyLoginZodErrorMessages };

@@ -80,7 +80,7 @@ const loginLogic = async (req: Request, res: Response): Promise<void> => {
     let userPlatformUidRow: QueryResult<userPlatformUidType> = await pgdbpool.query(checkExistanceOfUserSuppliedEmailInDb, [userSuppliedEmail]);
 
     if(userPlatformUidRow.rowCount === 0) {
-      res.status(200).json({
+      res.status(401).json({
         msg: 'No registered user found with provided email id.'
       });
       return ;

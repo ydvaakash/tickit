@@ -50,24 +50,30 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// App component
+// LoginPage component
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import './styles/App.css'
-import { SignupPage } from './pages/SignupPage'
-import { LoginPage } from './pages/LoginPage'
+import { HeaderLayout } from "../layouts/HeaderLayout";
+import { LoginPageLayout } from "../layouts/LoginPageLayout";
+import { FooterLayout } from "../layouts/FooterLayout";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { setServerError } from "../store/slices/serverErrorSlice";
 
-function App() {
+function LoginPage() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(setServerError(""));
+    document.title = "Tickit - Login";
+  });
+
   return (
-    <div className='w-full min-h-screen'>
-      <BrowserRouter>
-        <Routes>
-          <Route path='/signup' element={<SignupPage />} />
-          <Route path='/login' element={<LoginPage />} />
-        </Routes>
-      </BrowserRouter>
+    <div className="w-full min-h-screen flex flex-col items-center">
+      <HeaderLayout />
+      <LoginPageLayout />
+      <FooterLayout />
     </div>
   )
 }
 
-export default App;
+export { LoginPage };
