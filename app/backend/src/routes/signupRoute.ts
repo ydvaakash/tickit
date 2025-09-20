@@ -54,21 +54,27 @@
 
 import express, { Router } from 'express';
 import { signupLogic } from '../controllers/signupLogic';
+import { validateExistanceOfRequestHeaders } from '../middlewares/validateExistanceOfRequestHeaders';
 import validateExistanceOfRequestBody from '../middlewares/validateExistanceOfRequestBody';
+import { validateAvailabilityOfDetailsInHeaders } from '../middlewares/validateAvailabilityOfDetailsInHeaders';
 import validateAvailabilityOfSignupCredentials from '../middlewares/validateAvailabilityOfSignupCredentials';
 import validateFirstName from '../middlewares/validateFirstName';
 import validateLastName from '../middlewares/validateLastName';
 import validateEmail from '../middlewares/validateEmail';
 import validateUserPassword from '../middlewares/validateUserPassword';
+import { collectDeviceFingerprintsFromReq } from '../middlewares/collectDeviceFingerprintsFromReq';
 
 const signupRouter: Router = express.Router();
 
-signupRouter.post('/', validateExistanceOfRequestBody,
+signupRouter.post('/', validateExistanceOfRequestHeaders,
+  validateExistanceOfRequestBody,
+  validateAvailabilityOfDetailsInHeaders,
   validateAvailabilityOfSignupCredentials,
   validateFirstName,
   validateLastName,
   validateEmail,
   validateUserPassword,
+  collectDeviceFingerprintsFromReq,
   signupLogic
 );
 

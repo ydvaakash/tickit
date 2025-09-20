@@ -50,54 +50,47 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate the "first_name"
+// Test file for 'extractUserTimeZone.ts' utility
 
-import { Request, Response, NextFunction } from "express";
-import { firstNameZodSchema, firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
-import { ZodError } from 'zod';
+import { Request } from "express";
+import { extractUserTimeZone } from "../extractUserTimeZone";
 
-const validateFirstName = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    firstNameZodSchema.parse(req.body.first_name);
+describe("Testing 'extractUserTimeZone' utility", () => {
+  test("Passing an undefined 'X-User-Timezone' inside the 'req' object returns an empty string.", () => {
+    const mockReq = {
+      get: jest.fn().mockReturnValue(undefined)
+    } as unknown as Request;
 
-    if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
-      });
-      console.log("Invalid signup credentials input. first_name can not be null or undefined.");
-      return ;
-    }
+    expect(extractUserTimeZone(mockReq)).toBe("");
+  });
 
-    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
+  test("Passing a value of 'X-User-Timezone' inside the 'req' object returns the value itself.", () => {
+    const timeZoneValuesArray = [
+      "America/New_York",
+      "    Pacific/Honolulu       ",
+      "Asia/Kolkata        ",
+      "        Australia/Melbourne",
+      "",
+      "                ",
+      "Some random string"
+    ];
 
-    if(typeof receivedValueOfFirstName !== 'string') {
-      receivedValueOfFirstName = String(receivedValueOfFirstName);
+    const timeZoneResultsArray = [
+      "America/New_York",
+      "Pacific/Honolulu",
+      "Asia/Kolkata",
+      "Australia/Melbourne",
+      "",
+      "",
+      "Some random string"
+    ];
 
-      if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
-        res.status(400).json({
-          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
-        });
-        console.log("Invalid signup credentials input. first_name must be a valid text value.");
-        return ;
-      } else {
-        req.body.first_name = receivedValueOfFirstName;
-      }
-    }
+    timeZoneValuesArray.forEach((element, index) => {
+      const mockReq = {
+        get: jest.fn().mockReturnValue(element)
+      } as unknown as Request;
 
-    console.log("validateFirstName middleware passed.");
-    return next();
-  } catch(err) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
-      });
-      console.log(`Invalid signup credentials input. Invalid input first_name.`);
-      return ;
-    } else {
-      console.log("Error received in validateFirstName middleware.");
-      return next(err);
-    }
-  }
-}
-
-export default validateFirstName;
+      expect(extractUserTimeZone(mockReq)).toBe(timeZoneResultsArray[index]);
+    });
+  });
+});

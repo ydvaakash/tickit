@@ -56,11 +56,13 @@ import { Request, Response, NextFunction } from 'express';
 
 const validateExistanceOfRequestBody = (req: Request, res: Response, next: NextFunction): void => {
   // check if 'body' exists and is not empty
-  if(!req.body || Object.keys(req.body).length === 0) {
+  if(!req.body || typeof req.headers !== 'object' || Object.keys(req.body).length === 0) {
     res.status(403).json({msg: "Forbidden: Request tampered"});
+    console.log("validateExistanceOfRequestBody middleware failed.");
     return ;
   }
 
+  console.log("validateExistanceOfRequestBody middleware passed.");
   return next();
 }
 

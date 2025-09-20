@@ -50,54 +50,82 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate the "first_name"
+// Test file for extractUserIpFromReq.ts
 
-import { Request, Response, NextFunction } from "express";
-import { firstNameZodSchema, firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
-import { ZodError } from 'zod';
+import { Request } from "express";
+import { extractUserIpFromReq } from "../extractUserIpFromReq";
 
-const validateFirstName = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    firstNameZodSchema.parse(req.body.first_name);
+describe("Testing 'extractUserIpFromReq' utility", () => {
+  test("Passing undefined IP in the 'req' object should return 'null'.", () => {
+    const mockReq = {
+      ip: undefined
+    } as unknown as Request;
 
-    if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
-      });
-      console.log("Invalid signup credentials input. first_name can not be null or undefined.");
-      return ;
-    }
+    expect(extractUserIpFromReq(mockReq)).toBe(null);
+  });
 
-    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
+  test("Passing valid IPv4 address that is mapped to an IPv6 address and starts with '::ffff:' returns the trimmed IPv4 address.", () => {
+    const mockReq = {
+      ip: "::ffff:192.168.0.1"
+    } as unknown as Request;
 
-    if(typeof receivedValueOfFirstName !== 'string') {
-      receivedValueOfFirstName = String(receivedValueOfFirstName);
+    expect(extractUserIpFromReq(mockReq)).toBe("192.168.0.1");
+  });
 
-      if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
-        res.status(400).json({
-          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
-        });
-        console.log("Invalid signup credentials input. first_name must be a valid text value.");
-        return ;
-      } else {
-        req.body.first_name = receivedValueOfFirstName;
-      }
-    }
+  test("Passing valid IPv4 address returns the trimmed IPv4 address.", () => {
+    const mockReq = {
+      ip: "192.168.0.1"
+    } as unknown as Request;
 
-    console.log("validateFirstName middleware passed.");
-    return next();
-  } catch(err) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
-      });
-      console.log(`Invalid signup credentials input. Invalid input first_name.`);
-      return ;
-    } else {
-      console.log("Error received in validateFirstName middleware.");
-      return next(err);
-    }
-  }
-}
+    expect(extractUserIpFromReq(mockReq)).toBe("192.168.0.1");
+  });
 
-export default validateFirstName;
+  test("Passing valid IPv6 address returns the trimmed IPv6 address.", () => {
+    const ipv6_addresses = [
+      "2001:0db8:0000:0000:0000:ff00:0042:8329",
+      "2001:db8::ff00:42:8329",
+      "::1",
+      "fe80::1ff:fe23:4567:890a"
+    ];
+
+    ipv6_addresses.forEach(element => {
+      let mockReq = {
+        ip: element
+      } as unknown as Request;
+      expect(extractUserIpFromReq(mockReq)).toBe(element);
+    });
+  });
+
+  test("Passing a string that is neither an IPv4 nor an IPv6 address returns null.", () => {
+    const mockReq = {
+      ip: "random string"
+    } as unknown as Request;
+
+    expect(extractUserIpFromReq(mockReq)).toBe(null);
+  });
+
+  test("Passing a valid IPv4 and IPv6 address with extra spaces at beginning and end should return the trimmed address.", () => {
+    const ip_addresses = [
+      "  2001:0db8:0000:0000:0000:ff00:0042:8329            ",
+      "  2001:db8::ff00:42:8329           ",
+      "  ::1",
+      "fe80::1ff:fe23:4567:890a              ",
+      "  ::ffff:192.168.0.1        "
+    ];
+
+    ip_addresses.forEach(element => {
+      const mockReq = {
+        ip: element
+      } as unknown as Request;
+      expect(extractUserIpFromReq(mockReq)).toBe(element.trim());
+    });
+  });
+
+  test("Passing an empty string as the value of IP in 'req' object should return null", () => {
+    const mockReq = {
+      ip: "      "
+    } as unknown as Request;
+
+    expect(extractUserIpFromReq(mockReq)).toBe(null);
+  });
+});

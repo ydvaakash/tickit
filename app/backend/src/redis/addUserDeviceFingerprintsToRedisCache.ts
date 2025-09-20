@@ -50,54 +50,56 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate the "first_name"
+// Add user device fingerprint details to the Redis Cache memory
 
-import { Request, Response, NextFunction } from "express";
-import { firstNameZodSchema, firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
-import { ZodError } from 'zod';
+// import { redisClient, createRedisClient } from "./redisClient";
+import { createRedisClient } from "./createRedisClient";
 
-const validateFirstName = (req: Request, res: Response, next: NextFunction): void => {
+const addUserDeviceFingerprintsToRedisCache = async (
+  hashedUserPublicUid: string,
+  userCountryName: string,
+  userLatitude: string,
+  userLongitude: string,
+  userBrowser: string,
+  userBrowserVersion: string,
+  userOperatingSystem: string,
+  userSystemArchitecture: string,
+  userAcceptLanguage: string,
+  userTimeZone: string
+): Promise<boolean> => {
+  const key = `userPublicUid:${hashedUserPublicUid}`;
   try {
-    firstNameZodSchema.parse(req.body.first_name);
+    const redisClient = createRedisClient();
+    const keyAlreadyExists = await redisClient.exists(key);
 
-    if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
-      });
-      console.log("Invalid signup credentials input. first_name can not be null or undefined.");
-      return ;
+    if(keyAlreadyExists > 0) {
+      await redisClient.del(key);
     }
 
-    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
+    const result = await redisClient
+      .multi()
+      .hSet(key,{
+        'userCountry': userCountryName,
+        'userLatitude': userLatitude,
+        'userLongitude': userLongitude,
+        'userBrowser': userBrowser,
+        'userBrowserVersion': userBrowserVersion,
+        'userOperatingSystem': userOperatingSystem,
+        'userSystemArchitecture': userSystemArchitecture,
+        'userAcceptLanguage': userAcceptLanguage,
+        'userTimeZone': userTimeZone
+      })
+      .expire(key, 86400, "NX")
+      .exec();
 
-    if(typeof receivedValueOfFirstName !== 'string') {
-      receivedValueOfFirstName = String(receivedValueOfFirstName);
-
-      if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
-        res.status(400).json({
-          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
-        });
-        console.log("Invalid signup credentials input. first_name must be a valid text value.");
-        return ;
+      if(Number(result[0]) === 9 && Number(result[1]) === 1) {
+        return true;
       } else {
-        req.body.first_name = receivedValueOfFirstName;
+        return false;
       }
-    }
-
-    console.log("validateFirstName middleware passed.");
-    return next();
-  } catch(err) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
-      });
-      console.log(`Invalid signup credentials input. Invalid input first_name.`);
-      return ;
-    } else {
-      console.log("Error received in validateFirstName middleware.");
-      return next(err);
-    }
+  } catch (err) {
+    return false;
   }
-}
+};
 
-export default validateFirstName;
+export { addUserDeviceFingerprintsToRedisCache };

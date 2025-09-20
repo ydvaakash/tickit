@@ -50,54 +50,85 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate the "first_name"
+// Extract IP address of user from 'req'
 
-import { Request, Response, NextFunction } from "express";
-import { firstNameZodSchema, firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
-import { ZodError } from 'zod';
+import { Request } from "express";
+import * as net from 'net';
 
-const validateFirstName = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    firstNameZodSchema.parse(req.body.first_name);
+// const extractUserIpFromReq = (headersFromReq: Request): string => {
+//   const ipFromReqHeaders: string | string[] | undefined = headersFromReq.headers['x-forwarded-for'];
+//   let rawIp: string = '';
 
-    if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
-      });
-      console.log("Invalid signup credentials input. first_name can not be null or undefined.");
-      return ;
-    }
+//   // if(typeof ipFromReqHeaders === 'string') {
+//   //   if(ipFromReqHeaders.startsWith("::ffff:")) {
+//   //     rawIp = ipFromReqHeaders.replace("::ffff:", "");
+//   //   }
+//   // } else if(Array.isArray(ipFromReqHeaders)) {
+//   //   rawIp = ipFromReqHeaders[0];
+//   // }
 
-    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
+//   // if(!rawIp) {
+//   //   rawIp = headersFromReq.socket.remoteAddress || '';
+//   // }
 
-    if(typeof receivedValueOfFirstName !== 'string') {
-      receivedValueOfFirstName = String(receivedValueOfFirstName);
+//   if(typeof ipFromReqHeaders === 'string') {
+//     rawIp = ipFromReqHeaders.split(',')[0].trim();
+//   } else if(Array.isArray(ipFromReqHeaders)) {
+//     rawIp = ipFromReqHeaders[0];
+//   }
 
-      if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
-        res.status(400).json({
-          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
-        });
-        console.log("Invalid signup credentials input. first_name must be a valid text value.");
-        return ;
-      } else {
-        req.body.first_name = receivedValueOfFirstName;
-      }
-    }
+//   if(!rawIp) {
+//     rawIp = headersFromReq.socket.remoteAddress || '';
+//   }
 
-    console.log("validateFirstName middleware passed.");
-    return next();
-  } catch(err) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
-      });
-      console.log(`Invalid signup credentials input. Invalid input first_name.`);
-      return ;
-    } else {
-      console.log("Error received in validateFirstName middleware.");
-      return next(err);
+//   const normalizedIpv4Address: string = normalizeToIpv4(rawIp);
+
+//   return normalizedIpv4Address;
+
+// };
+
+// const normalizeToIpv4 = (unformattedIp: string): string => {
+//   const ipv4Regex: RegExp = /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$/;
+
+//   const ipv6Regex: RegExp = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::(?:[0-9a-fA-F]{1,4}:){0,7}[0-9a-fA-F]{1,4}$|^(?:[0-9a-fA-F]{1,4}:){1,7}:$|^(?:[0-9a-fA-F]{1,4}:){1,7}:$|([0-9a-fA-F]{1,4}){2,7}/;
+
+//   let tempArray: string[] = [];
+//   let fetchedIp: string = '';
+
+//   if(unformattedIp.match(ipv4Regex)) {
+//     tempArray = unformattedIp.split(".");
+//   } else if(unformattedIp.match(ipv6Regex)) {
+//     tempArray = unformattedIp.split(":");
+//   }
+  
+//   fetchedIp = tempArray[4]+"."+tempArray[5]+"."+tempArray[6]+"."+tempArray[7];
+
+//   return fetchedIp;
+// };
+
+
+const extractUserIpFromReq = (reqObject: Request): string | null => {
+  const ipFromReq: string | undefined = reqObject.ip;
+  
+  if(!ipFromReq) {
+    return null; // No IP found
+  }
+  
+  const trimmedIP = ipFromReq.trim();
+
+  if(ipFromReq.startsWith("::ffff:")) {
+    const ipv4: string = trimmedIP.substring(7);
+
+    if(net.isIPv4(ipv4)) {
+      return ipv4.trim();
     }
   }
-}
 
-export default validateFirstName;
+  if(net.isIPv4(trimmedIP) || net.isIPv6(trimmedIP)) {
+    return trimmedIP.trim();
+  }
+
+  return null;
+};
+
+export { extractUserIpFromReq };

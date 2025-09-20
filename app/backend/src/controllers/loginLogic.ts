@@ -62,10 +62,21 @@ import { generateRefreshToken } from '../utils/generateRefreshToken';
 import { generateAccessToken } from '../utils/generateAccessToken';
 import { generateUserPublicUid } from '../utils/generateUserPublicUid';
 import { getStringEnvVar } from '../utils/getStringEnvironmentVariable';
+import { reqObjectWithDeviceFingerprintDetails } from '../types/reqObjectWithDeviceFingerprintDetails';
+import { addUserDeviceFingerprintsToRedisCache } from '../redis/addUserDeviceFingerprintsToRedisCache';
+import { removeUserDeviceFingerprintDetailsFromRedisCache } from '../redis/removeUserDeviceFingerprintDetailsFromRedisCache';
 
-const loginLogic = async (req: Request, res: Response): Promise<void> => {
+const loginLogic = async (req: reqObjectWithDeviceFingerprintDetails, res: Response): Promise<void> => {
   let userSuppliedEmail: emailTypeFromZod = req.body.email;
   let userSuppliedUserPassword: userPasswordTypeFromZod = req.body.user_password;
+
+  // check if device fingerprints of user are available in 'req'
+  if(!req.userDeviceFingerprintDetails) {
+    res.status(500).json({
+      msg: "Internal server error. Middleware failed to collect device fingerprint details of user."
+    });
+    return ;
+  }
 
   let checkExistanceOfUserSuppliedEmailInDb: string = 'SELECT user_platform_uid FROM user_details.user_profile_details WHERE user_email=$1';
 
@@ -175,9 +186,38 @@ const loginLogic = async (req: Request, res: Response): Promise<void> => {
 
   // check if value of refresh token validity available as environment variable
   let refreshTokenValidity: string = getStringEnvVar("REFRESHTOKENVALIDITY");
-  if(refreshTokenValidity === '') {
+  if(!refreshTokenValidity || refreshTokenValidity === '') {
     res.status(500).json({
       msg: 'Internal server error. Missing value of environment variable for \'refresh token validity\'.'
+    });
+    return ;
+  }
+
+  const accessTokenValidity: string | undefined = process.env['ACCESSTOKENVALIIDITY'];
+
+  if(!accessTokenValidity || (accessTokenValidity === '')) {
+    res.status(500).json({
+      msg: "Server error. Missing access token expiry value."
+    });
+    return ;
+  }
+
+  const userDeviceFingerprintsSuccessfullyAddedToRedis: boolean = await addUserDeviceFingerprintsToRedisCache(
+    hashedUserPublicUid,
+    req.userDeviceFingerprintDetails?.userCountryName,
+    req.userDeviceFingerprintDetails?.userLatitude,
+    req.userDeviceFingerprintDetails?.userLongitude,
+    req.userDeviceFingerprintDetails?.userBrowser,
+    req.userDeviceFingerprintDetails?.userBrowserVersion,
+    req.userDeviceFingerprintDetails?.userOperatingSystem,
+    req.userDeviceFingerprintDetails?.userSystemArchitecture,
+    req.userDeviceFingerprintDetails?.userAcceptLanguage,
+    req.userDeviceFingerprintDetails?.userTimeZone
+  );
+
+  if(!userDeviceFingerprintsSuccessfullyAddedToRedis) {
+    res.status(500).json({
+      msg: "Internal server error. Failed to add user's device fingerprint details to redis cache."
     });
     return ;
   }
@@ -192,25 +232,46 @@ const loginLogic = async (req: Request, res: Response): Promise<void> => {
     await pgdbpool.query(endTransactionQuery);
   } catch(err) {
     await pgdbpool.query("ROLLBACK");
+    await removeUserDeviceFingerprintDetailsFromRedisCache(hashedUserPublicUid);
     res.status(500).json({
       msg: 'Internal server error. Couldn\'t update user public UID in database.'
     });
-    return;
+    return ;
   }
 
-  // set refresh token as HTTP cookie in user browser
-  res.cookie("tickitRefreshToken", refreshTokenForUser, {
+  // // set refresh token as HTTP cookie in user browser
+  // res.cookie("tickitRefreshToken", refreshTokenForUser, {
+  //   httpOnly: true,
+  //   // secure: true,
+  //   sameSite: 'strict',
+  //   maxAge: parseInt(refreshTokenValidity)*24*60*60*1000 
+  // });
+
+  // // send access token with 'res' to the client
+  // res.status(200).json({
+  //   msg: 'Login successful',
+  //   accessToken: accessTokenForUser
+  // });
+
+  res.cookie('tickitRefreshToken', refreshTokenForUser, {
     httpOnly: true,
     // secure: true,
     sameSite: 'strict',
-    maxAge: parseInt(refreshTokenValidity)*24*60*60*1000 
+    maxAge: parseInt(refreshTokenValidity) * 24 * 60 * 60 * 1000,
   });
 
-  // send access token with 'res' to the client
-  res.status(200).json({
-    msg: 'Login successful',
-    accessToken: accessTokenForUser
+  res.cookie('tickitAccessToken', accessTokenForUser, {
+    httpOnly: true,
+    // secure: true,
+    sameSite: 'strict',
+    maxAge: parseInt(accessTokenValidity) * 60 * 1000,
   });
+
+  res.status(200).json({
+    msg: "Login successful"
+  });
+
+  console.log("Login completed successfully.");
 
   return ;
 };

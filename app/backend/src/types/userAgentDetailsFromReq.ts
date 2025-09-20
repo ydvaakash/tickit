@@ -50,54 +50,13 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate the "first_name"
+// Typescript type for User-Agent details extracted from 'req'
 
-import { Request, Response, NextFunction } from "express";
-import { firstNameZodSchema, firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
-import { ZodError } from 'zod';
-
-const validateFirstName = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    firstNameZodSchema.parse(req.body.first_name);
-
-    if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
-      });
-      console.log("Invalid signup credentials input. first_name can not be null or undefined.");
-      return ;
-    }
-
-    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
-
-    if(typeof receivedValueOfFirstName !== 'string') {
-      receivedValueOfFirstName = String(receivedValueOfFirstName);
-
-      if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
-        res.status(400).json({
-          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
-        });
-        console.log("Invalid signup credentials input. first_name must be a valid text value.");
-        return ;
-      } else {
-        req.body.first_name = receivedValueOfFirstName;
-      }
-    }
-
-    console.log("validateFirstName middleware passed.");
-    return next();
-  } catch(err) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
-      });
-      console.log(`Invalid signup credentials input. Invalid input first_name.`);
-      return ;
-    } else {
-      console.log("Error received in validateFirstName middleware.");
-      return next(err);
-    }
-  }
+type typeForUserAgentDetailsFromReq = {
+  userOperatingSystem: string;
+  userBrowser: string;
+  userBrowserVersion: string;
+  userSystemArchitecture: string;
 }
 
-export default validateFirstName;
+export { typeForUserAgentDetailsFromReq };

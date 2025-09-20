@@ -58,6 +58,8 @@ import connectDatabase from "./database/connectDatabase";
 import disconnectDatabase from "./database/disconnectDatabase";
 import { Server } from "node:http";
 import { getStringEnvVar } from './utils/getStringEnvironmentVariable';
+import { connectRedisClient } from "./redis/connectRedisClient";
+import { disconnectRedisClient } from "./redis/disconnectRedisClient";
 
 (
   async () => {
@@ -74,25 +76,45 @@ import { getStringEnvVar } from './utils/getStringEnvironmentVariable';
       }
 
       await connectDatabase();
-  
+
+      await connectRedisClient();
+
       const server: Server = expressApp.listen(port, () => {
         console.log(`Server started successfully at port: ${port}`);
       });
 
-      process.on('SIGINT', async () => {
-        await disconnectDatabase();
+      ["SIGINT", "SIGTERM"].forEach(signal => {
+        process.on(signal, async () => {
+          await disconnectDatabase();
 
-        server.close((error) => {
-          if(error) {
-            console.error("Error shutting down the server. Error details: ", error);
-          } else {
-            console.log(`Server closed successfully.`);
-          }
+          disconnectRedisClient();
+
+          server.close((error) => {
+            if(error) {
+              console.error("Error shutting down the server. Error details: ", error);
+            } else {
+              console.log(`Server closed successfully.`);
+            }
+          });
         });
       });
     } catch (initialServerError) {
       console.error("Express server couldn't be started.");
       console.error(initialServerError);
+
+      try {
+        await disconnectDatabase();
+      } catch(err) {
+        console.error("Error while attempting to disconnect the database. Error details: ", err);
+      }
+
+      try {
+        disconnectRedisClient();
+      } catch(err) {
+        console.error("Error while attempting to disconnect the redis client. Error details: ", err);
+      }
+
+      process.exit(1);
     }
   }
 )();

@@ -63,6 +63,7 @@ const newUserSignupApi = async (first_name: firstNameTypeFromZod, last_name: las
     email,
     user_password
   })
+  console.log("newUserSignupApi response received from backend on frontend.");
   return responseFromBackend;
 }
 

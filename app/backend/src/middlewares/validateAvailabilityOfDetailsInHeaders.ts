@@ -50,54 +50,53 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate the "first_name"
+// Middleware to validate if 'headers' inside 'req' object has device fingerprint credentials
 
-import { Request, Response, NextFunction } from "express";
-import { firstNameZodSchema, firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
-import { ZodError } from 'zod';
+import { NextFunction, Request, Response } from "express";
 
-const validateFirstName = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    firstNameZodSchema.parse(req.body.first_name);
+const validateAvailabilityOfDetailsInHeaders = (req: Request, res: Response, next: NextFunction): void => {
+  const userIp: string | string[] | undefined = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const userTimeZone: string | string[] | undefined = req.headers['x-timezone'];
+  const userAgentDetails: string | undefined = req.headers['user-agent'];
+  const userAcceptLanguage: string | undefined = req.headers['accept-language'];
 
-    if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
-      });
-      console.log("Invalid signup credentials input. first_name can not be null or undefined.");
-      return ;
-    }
-
-    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
-
-    if(typeof receivedValueOfFirstName !== 'string') {
-      receivedValueOfFirstName = String(receivedValueOfFirstName);
-
-      if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
-        res.status(400).json({
-          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
-        });
-        console.log("Invalid signup credentials input. first_name must be a valid text value.");
-        return ;
-      } else {
-        req.body.first_name = receivedValueOfFirstName;
-      }
-    }
-
-    console.log("validateFirstName middleware passed.");
-    return next();
-  } catch(err) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
-      });
-      console.log(`Invalid signup credentials input. Invalid input first_name.`);
-      return ;
-    } else {
-      console.log("Error received in validateFirstName middleware.");
-      return next(err);
-    }
+  if(userIp === undefined || userIp === null || userIp === '') {
+    res.status(422).json({
+      msg: "Missing device fingerprint details. IP not available."
+    });
+    console.log("Use IP details not found.");
+    return ;
   }
-}
 
-export default validateFirstName;
+  if(userTimeZone === undefined || userTimeZone === null || userTimeZone === '') {
+    res.status(422).json({
+      msg: "Missing device fingerprint details. Timezone details not available."
+    });
+    console.log("userTimeZone = ", userTimeZone);
+    console.log("User time zone details not found.");
+    return ;
+  }
+
+  if(userAgentDetails === undefined || userAgentDetails === null || userAgentDetails === '') {
+    res.status(422).json({
+      msg: "Missing device fingerprint details. User-Agent details not available."
+    });
+    console.log("userAgent details not found.");
+    return ;
+  }
+
+  if(userAcceptLanguage === undefined || userAcceptLanguage === null || userAcceptLanguage === '') {
+    res.status(422).json({
+      msg: "Missing device fingerprint details. Accept-Language not available."
+    });
+    console.log("User acceptLanguage details not found.");
+    return ;
+  }
+
+  console.log("validateAvailabilityOfDetailsInHeaders middleware passed.");
+
+  // call 'next' if every check mentioned above has passed
+  next();
+};
+
+export { validateAvailabilityOfDetailsInHeaders };

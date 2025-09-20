@@ -50,54 +50,51 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate the "first_name"
+// Test file for 'generateUserPublicUid.ts' utility
 
-import { Request, Response, NextFunction } from "express";
-import { firstNameZodSchema, firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
-import { ZodError } from 'zod';
+jest.mock("bcrypt");
+jest.mock("../generateRandomString", () => ({
+  __esModule: true,
+  default: jest.fn().mockReturnValue("SomeRandomString")
+}));
 
-const validateFirstName = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    firstNameZodSchema.parse(req.body.first_name);
+import { generateUserPublicUid } from "../generateUserPublicUid";
+import bcrypt from 'bcrypt';
+import generateRandomString from "../generateRandomString";
 
-    if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
-      });
-      console.log("Invalid signup credentials input. first_name can not be null or undefined.");
-      return ;
-    }
+const jestBcrypt = bcrypt as jest.Mocked<typeof bcrypt>
+const jestGenerateRandomString = generateRandomString as jest.Mocked<typeof generateRandomString>
 
-    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
+describe("Testing 'generateUserPublicUid' utility", () => {
+  afterAll(() => {
+    jest.useRealTimers();
+  });
 
-    if(typeof receivedValueOfFirstName !== 'string') {
-      receivedValueOfFirstName = String(receivedValueOfFirstName);
+  test("Valid 'hashedUserPublicUid' is returned when bcrypt.hash() function works properly.", async () => {
+    const bcryptSaltRoundsAsNumber = 5;
 
-      if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
-        res.status(400).json({
-          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
-        });
-        console.log("Invalid signup credentials input. first_name must be a valid text value.");
-        return ;
-      } else {
-        req.body.first_name = receivedValueOfFirstName;
-      }
-    }
+    jest.useFakeTimers().setSystemTime(new Date("2025-08-18T12:00:00Z"));
 
-    console.log("validateFirstName middleware passed.");
-    return next();
-  } catch(err) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
-      });
-      console.log(`Invalid signup credentials input. Invalid input first_name.`);
-      return ;
-    } else {
-      console.log("Error received in validateFirstName middleware.");
-      return next(err);
-    }
-  }
-}
+    (jestBcrypt.hash as jest.Mock).mockResolvedValue("validHashedUserPublicUid");
 
-export default validateFirstName;
+    const result = await generateUserPublicUid(bcryptSaltRoundsAsNumber);
+
+    expect(jestGenerateRandomString).toHaveBeenCalledWith(5);
+    expect(jestBcrypt.hash).toHaveBeenCalled();
+    expect(result).toBe("validHashedUserPublicUid");
+  });
+
+  test("Emptry string is returned as 'hashedUserPublicUid' when bcrypt.hash() function throws an error.", async () => {
+    const bcryptSaltRoundsAsNumber = 5;
+
+    jest.useFakeTimers().setSystemTime(new Date("2025-08-18T12:00:00Z"));
+
+    (jestBcrypt.hash as jest.Mock).mockRejectedValue(new Error("bcrypt failed"));
+
+    const result = await generateUserPublicUid(bcryptSaltRoundsAsNumber);
+
+    expect(jestGenerateRandomString).toHaveBeenCalledWith(5);
+    expect(jestBcrypt.hash).toHaveBeenCalled();
+    expect(result).toBe("");
+  });
+});

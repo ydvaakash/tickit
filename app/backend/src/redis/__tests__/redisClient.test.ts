@@ -50,54 +50,62 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate the "first_name"
+// Test file for 'createRedisClient.ts'
 
-import { Request, Response, NextFunction } from "express";
-import { firstNameZodSchema, firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
-import { ZodError } from 'zod';
+jest.mock("../../utils/getStringEnvironmentVariable", () => ({
+  getStringEnvVar: jest.fn()
+}));
 
-const validateFirstName = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    firstNameZodSchema.parse(req.body.first_name);
+import { getStringEnvVar } from "../../utils/getStringEnvironmentVariable";
+import { createRedisClient } from "../createRedisClient";
 
-    if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
-      });
-      console.log("Invalid signup credentials input. first_name can not be null or undefined.");
-      return ;
-    }
+const mockedGetStringEnvVar = getStringEnvVar as jest.MockedFunction<typeof getStringEnvVar>
 
-    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
-
-    if(typeof receivedValueOfFirstName !== 'string') {
-      receivedValueOfFirstName = String(receivedValueOfFirstName);
-
-      if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
-        res.status(400).json({
-          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
-        });
-        console.log("Invalid signup credentials input. first_name must be a valid text value.");
-        return ;
-      } else {
-        req.body.first_name = receivedValueOfFirstName;
+describe("Test 'createRedisClient'", () => {
+  test("Throw an error if value of 'redisServerName' is an empty string.", () => {
+    mockedGetStringEnvVar.mockImplementation((key) => {
+      let result;
+      switch (key) {
+        case "REDISSERVERNAME":
+          result = "";
+          break;
+        case "REDISSECURITYPASSWORD":
+          result = "redisSecurityPasswordString";
+          break;
+        case "REDISSERVERPORT":
+          result = "6379";
+          break;
       }
-    }
+      return result;
+    });
 
-    console.log("validateFirstName middleware passed.");
-    return next();
-  } catch(err) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
-      });
-      console.log(`Invalid signup credentials input. Invalid input first_name.`);
-      return ;
-    } else {
-      console.log("Error received in validateFirstName middleware.");
-      return next(err);
-    }
-  }
-}
+    expect(() => createRedisClient()).toThrow("Missing Redis Server Name or it's value is missing in environment variables for redis client connection.");
+  });
 
-export default validateFirstName;
+  test("Throw an error if value of 'redisSecurityPassword' is an empty string", () => {
+    mockedGetStringEnvVar.mockImplementation((key) => {
+      let result;
+      switch (key) {
+        case "REDISSERVERNAME":
+          result = "localhost";
+        case "REDISSECURITYPASSWORD":
+          result = "";
+        case "REDISSERVERPORT":
+          result = "6379";
+      }
+      return result;
+    });
+  });
+
+  // test("Throw an error if value of 'redisServerPort' is an empty string", () => {});
+
+  // test("Throw an error if the value of 'redisServerPortAsNumber' variable is 'isNaN'.", () => {});
+
+  // test("Return a valid 'redisClient' if all the required environment variables and values are available.", () => {});
+
+  // test("Log the error message when 'redisClient' fails due to an error.", () => {});
+
+  // test("Log the connecting message when 'redisClient' is attempting to connect.", () => {});
+
+  // test("Log the successful connected message when 'redisClient' is connected successfully and is ready to be used.", () => {});
+});

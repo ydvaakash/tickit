@@ -58,20 +58,29 @@ import jwt from 'jsonwebtoken';
 const generateAccessToken = (userPublicUid: string): string => {
   let finalAccessToken: string = '';
 
-  const accessTokenSecretKey: string | undefined = process.env['ACCESSTOKENSECRETKEY'];
-  const accessTokenIssuer: string | undefined = process.env['ACCESSTOKENISSUER'];
-  const accessTokenAudience: string | undefined = process.env['ACCESSTOKENAUDIENCE'];
-  const accessTokenValidity: string | undefined = process.env['ACCESSTOKENVALIIDITY'];
+  const accessTokenSecretKey: string | undefined = process.env['ACCESSTOKENSECRETKEY'] ?? "";
+  const accessTokenIssuer: string | undefined = process.env['ACCESSTOKENISSUER'] ?? "";
+  const accessTokenAudience: string | undefined = process.env['ACCESSTOKENAUDIENCE'] ?? "";
+  const accessTokenValidity: string | undefined = process.env['ACCESSTOKENVALIIDITY'] ?? "";
 
   if(!accessTokenSecretKey || !accessTokenIssuer || !accessTokenAudience || !accessTokenValidity) {
-    return finalAccessToken = '';
+    return finalAccessToken = "";
+  }
+
+  const trimmedAccessTokenSecretKey = accessTokenSecretKey.trim();
+  const trimmedAccessTokenIssuer = accessTokenIssuer.trim();
+  const trimmedAccessTokenAudience = accessTokenAudience.trim();
+  const trimmedAccessTokenValidity = accessTokenValidity.trim();
+
+  if(trimmedAccessTokenSecretKey === "" || trimmedAccessTokenIssuer === "" || trimmedAccessTokenAudience === "" || trimmedAccessTokenValidity === "") {
+    return finalAccessToken = "";
   }
 
   try {
-    finalAccessToken = jwt.sign({uid: userPublicUid}, accessTokenSecretKey, {
-      expiresIn: accessTokenValidity as jwt.SignOptions['expiresIn'],
-      issuer: accessTokenIssuer,
-      audience: accessTokenAudience
+    finalAccessToken = jwt.sign({uid: userPublicUid}, trimmedAccessTokenSecretKey, {
+      expiresIn: trimmedAccessTokenValidity as jwt.SignOptions['expiresIn'],
+      issuer: trimmedAccessTokenIssuer,
+      audience: trimmedAccessTokenAudience
     });
   } catch(err) {
     finalAccessToken = '';

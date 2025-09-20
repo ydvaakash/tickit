@@ -59,20 +59,29 @@ import jwt from 'jsonwebtoken';
 const generateRefreshToken = ( userPublicUid: string ): string => {
   let finalRefreshToken: string = '';
 
-  const refreshTokenSecretKey: string | undefined = process.env['REFRESHTOKENSECRETKEY'];
-  const refreshTokenIssuer: string | undefined = process.env['REFRESHTOKENISSUER'];
-  const refreshTokenAudience: string | undefined = process.env['REFRESHTOKENAUDIENCE'];
-  const refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'];
+  const refreshTokenSecretKey: string | undefined  = process.env['REFRESHTOKENSECRETKEY'] ?? "";
+  const refreshTokenIssuer: string | undefined = process.env['REFRESHTOKENISSUER'] ?? "";
+  const refreshTokenAudience: string | undefined = process.env['REFRESHTOKENAUDIENCE'] ?? "";
+  const refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'] ?? "";
 
   if(!refreshTokenSecretKey || !refreshTokenIssuer || !refreshTokenAudience || !refreshTokenValidity) {
     return finalRefreshToken = '';
   }
 
+  const trimmedRefreshTokenSecretKey = refreshTokenSecretKey.trim();
+  const trimmedRefreshTokenIssuer = refreshTokenIssuer.trim();
+  const trimmedRefreshTokenAudience = refreshTokenAudience.trim();
+  const trimmedRefreshTokenValidity = refreshTokenValidity.trim();
+
+  if(trimmedRefreshTokenSecretKey === "" || trimmedRefreshTokenIssuer === "" || trimmedRefreshTokenAudience === "" || trimmedRefreshTokenValidity === "") {
+    return finalRefreshToken = "";
+  }
+
   const jwtid: string = uuidv4();
   const issuedAt: number = Date.now();
   
-  const refreshTokenValidityNumeral: number = parseInt(refreshTokenValidity);
-  const refreshTokenValidityMetric: string = refreshTokenValidity.split(refreshTokenValidityNumeral.toString())[1];
+  const refreshTokenValidityNumeral: number = parseInt(trimmedRefreshTokenValidity);
+  const refreshTokenValidityMetric: string = trimmedRefreshTokenValidity.split(refreshTokenValidityNumeral.toString())[1];
   let expiryDurationInMilliseconds: number = 0;
 
   if(refreshTokenValidityMetric === "d") {
@@ -84,10 +93,10 @@ const generateRefreshToken = ( userPublicUid: string ): string => {
   const expiresAt: number = issuedAt + expiryDurationInMilliseconds;
 
   try {
-    finalRefreshToken = jwt.sign({uid: userPublicUid}, refreshTokenSecretKey, {
-      expiresIn: refreshTokenValidity as jwt.SignOptions['expiresIn'],
-      issuer: refreshTokenIssuer,
-      audience: refreshTokenAudience,
+    finalRefreshToken = jwt.sign({uid: userPublicUid}, trimmedRefreshTokenSecretKey, {
+      expiresIn: trimmedRefreshTokenValidity as jwt.SignOptions['expiresIn'],
+      issuer: trimmedRefreshTokenIssuer,
+      audience: trimmedRefreshTokenAudience,
       jwtid: jwtid
     });
   } catch(err) {

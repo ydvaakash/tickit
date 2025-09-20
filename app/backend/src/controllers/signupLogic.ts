@@ -64,12 +64,86 @@ import bcrypt from 'bcrypt';
 import { generateUserPublicUid } from '../utils/generateUserPublicUid';
 import { generateRefreshToken } from '../utils/generateRefreshToken';
 import { generateAccessToken } from '../utils/generateAccessToken';
+import { extractUserIpFromReq } from '../utils/extractUserIpFromReq';
+import { extractUserAgentDetailsFromReq } from '../utils/extractUserAgentDetailsFromReq';
+import type { typeForUserAgentDetailsFromReq } from '../types/userAgentDetailsFromReq';
+import { extractUserLanguage } from '../utils/extractUserLanguage';
+import { extractUserTimeZone } from '../utils/extractUserTimeZone';
+import { extractGeolocationFromIPAddress } from '../api/extractGeolocationFromIPAddress';
+import type { userGeolocationDetailsType } from '../types/userGeolocationAndIspDetailsType';
+import { addUserDeviceFingerprintsToRedisCache } from '../redis/addUserDeviceFingerprintsToRedisCache';
+import { reqObjectWithDeviceFingerprintDetails } from '../types/reqObjectWithDeviceFingerprintDetails';
 
-const signupLogic = async (req: Request, res: Response): Promise<void> => {
-  let userSuppliedFirstName: firstNameTypeFromZod = req.body.first_name;
-  let userSuppliedLastName: lastNameTypeFromZod = req.body.last_name;
-  let userSuppliedEmail: emailTypeFromZod = req.body.email;
-  let userSuppliedUserPassword: userPasswordTypeFromZod = req.body.user_password;
+const signupLogic = async (req: reqObjectWithDeviceFingerprintDetails, res: Response): Promise<void> => {
+  const userSuppliedFirstName: firstNameTypeFromZod = req.body.first_name;
+  const userSuppliedLastName: lastNameTypeFromZod = req.body.last_name;
+  const userSuppliedEmail: emailTypeFromZod = req.body.email;
+  const userSuppliedUserPassword: userPasswordTypeFromZod = req.body.user_password;
+
+  // // gather device fingerprint details from 'req'
+  // const userIp: string | null = extractUserIpFromReq(req);
+  // const userAgentDetails: typeForUserAgentDetailsFromReq = extractUserAgentDetailsFromReq(req);
+  // const userAcceptLanguage: string = extractUserLanguage(req);
+  // const userTimeZone: string = extractUserTimeZone(req);
+
+  // if(userIp === null || userIp === "" || userAcceptLanguage === "" || userTimeZone === "" || userAgentDetails.userBrowser === "" || userAgentDetails.userBrowserVersion === "" || userAgentDetails.userOperatingSystem === "" || userAgentDetails.userSystemArchitecture === "") {
+  //   // reject the request and revert back with denial to signup
+  //   res.status(400).json({
+  //     msg: "Bad request. Missing required client device information."
+  //   });
+  // }
+
+  // const userGeolocationDetails: userGeolocationDetailsType = await extractGeolocationFromIPAddress(userIp);
+
+  // if(!userGeolocationDetails.successFlag) {
+  //   if(userGeolocationDetails.statusCode === 500) {
+  //     res.status(500).json({
+  //       msg: "Internal server error contacting the geolocation api."
+  //     });
+  //     return ;
+  //   } else {
+  //     res.status(503).json({
+  //       msg: "Geolocation lookup failed."
+  //     });
+  //     return ;
+  //   }
+  // }
+
+  // if(userGeolocationDetails.data.userCountryName === "" || userGeolocationDetails.data.userLatitude === "" || userGeolocationDetails.data.userLongitude === "") {
+  //   res.status(422).json({
+  //     msg: "Missing mandatory device information in api response."
+  //   });
+  //   return ;
+  // }
+
+  // if(userAgentDetails.userBrowser === "" || userAgentDetails.userBrowserVersion === "" || userAgentDetails.userOperatingSystem === "" || userAgentDetails.userSystemArchitecture === "") {
+  //   res.status(422).json({
+  //     msg: "Missing mandatory browser information in api response."
+  //   });
+  //   return ;
+  // }
+
+  // if(userAcceptLanguage === "") {
+  //   res.status(422).json({
+  //     msg: "Missing language specific details from client system."
+  //   });
+  //   return ;
+  // }
+
+  // if(userTimeZone === "") {
+  //   res.status(422).json({
+  //     msg: "Missing time zone details of the client."
+  //   });
+  //   return ;
+  // }
+
+  // check if device fingerprints of user are available in 'req'
+  if(!req.userDeviceFingerprintDetails) {
+    res.status(500).json({
+      msg: "Internal server error. Middleware failed to collect device fingerprint details of user."
+    });
+    return ;
+  }
 
   // check if user supplied email is already registered
   try {
@@ -175,16 +249,24 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
   }
 
   const refreshTokenForUser: string = generateRefreshToken(hashedUserPublicUid);
-  let refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'];
+  const refreshTokenValidity: string | undefined = process.env['REFRESHTOKENVALIDITY'];
 
   if(!refreshTokenValidity || (refreshTokenForUser === '')) {
     res.status(508).json({
-      msg: 'Server error. Couldn\'t generate refresh token for user.'
+      msg: 'Server error. Missing refresh token expiry value.'
     });
     return ;
   }
 
   const accessTokenForUser: string = generateAccessToken(hashedUserPublicUid);
+  const accessTokenValidity: string | undefined = process.env['ACCESSTOKENVALIIDITY'];
+
+  if(!accessTokenValidity || (accessTokenValidity === '')) {
+    res.status(500).json({
+      msg: "Server error. Missing access token expiry value."
+    });
+    return ;
+  }
 
   if(accessTokenForUser === '') {
     res.status(508).json({
@@ -193,17 +275,64 @@ const signupLogic = async (req: Request, res: Response): Promise<void> => {
     return ;
   }
 
-  res.cookie('tickitRefreshToken', refreshTokenForUser, {
-    httpOnly: true,
-    // secure: true,
-    sameSite: 'strict',
-    maxAge: parseInt(refreshTokenValidity) * 24 * 60 * 60 * 1000
-  });
+  // const userDeviceFingerprintsSuccessfullyAddedToRedis: boolean = await addUserDeviceFingerprintsToRedisCache(
+  //   hashedUserPublicUid,
+  //   userGeolocationDetails.data.userCountryName,
+  //   userGeolocationDetails.data.userLatitude,
+  //   userGeolocationDetails.data.userLongitude,
+  //   userAgentDetails.userBrowser,
+  //   userAgentDetails.userBrowserVersion,
+  //   userAgentDetails.userOperatingSystem,
+  //   userAgentDetails.userSystemArchitecture,
+  //   userAcceptLanguage,
+  //   userTimeZone
+  // );
 
-  res.status(200).json({
-    accessToken: accessTokenForUser,
-    msg: 'Signup successful'
-  });
+  const userDeviceFingerprintsSuccessfullyAddedToRedis: boolean = await addUserDeviceFingerprintsToRedisCache(
+    hashedUserPublicUid,
+    req.userDeviceFingerprintDetails?.userCountryName,
+    req.userDeviceFingerprintDetails?.userLatitude,
+    req.userDeviceFingerprintDetails?.userLongitude,
+    req.userDeviceFingerprintDetails?.userBrowser,
+    req.userDeviceFingerprintDetails?.userBrowserVersion,
+    req.userDeviceFingerprintDetails?.userOperatingSystem,
+    req.userDeviceFingerprintDetails?.userSystemArchitecture,
+    req.userDeviceFingerprintDetails?.userAcceptLanguage,
+    req.userDeviceFingerprintDetails?.userTimeZone
+  );
+
+  if(userDeviceFingerprintsSuccessfullyAddedToRedis) {
+    res.cookie('tickitRefreshToken', refreshTokenForUser, {
+      httpOnly: true,
+      // secure: true,
+      sameSite: 'strict',
+      maxAge: parseInt(refreshTokenValidity) * 24 * 60 * 60 * 1000,
+    });
+
+    res.cookie('tickitAccessToken', accessTokenForUser, {
+      httpOnly: true,
+      // secure: true,
+      sameSite: 'strict',
+      maxAge: parseInt(accessTokenValidity) * 60 * 1000,
+    });
+
+    res.status(200).json({
+      // accessToken: accessTokenForUser,
+      msg: 'Signup successful'
+    });
+    console.log("Signup completed successfully.");
+  } else {
+    res.status(500).json({
+      msg: "Signup completed successfully, but failed to login the user."
+    });
+  }
+
+  // res.cookie('tickitRefreshToken', refreshTokenForUser, {
+  //   httpOnly: true,
+  //   // secure: true,
+  //   sameSite: 'strict',
+  //   maxAge: parseInt(refreshTokenValidity) * 24 * 60 * 60 * 1000
+  // });
 
   return ;
 };

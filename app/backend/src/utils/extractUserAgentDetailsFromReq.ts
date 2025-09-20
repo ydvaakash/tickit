@@ -50,54 +50,38 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate the "first_name"
+// Extract User-Agent details from 'req'
 
-import { Request, Response, NextFunction } from "express";
-import { firstNameZodSchema, firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
-import { ZodError } from 'zod';
+import { Request } from "express";
+import type { typeForUserAgentDetailsFromReq } from "../types/userAgentDetailsFromReq";
+import { ICPU, UAParser, IOS, IBrowser } from "ua-parser-js";
 
-const validateFirstName = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    firstNameZodSchema.parse(req.body.first_name);
+const extractUserAgentDetailsFromReq = (req: Request): typeForUserAgentDetailsFromReq => {
+  const userAgentStringFromReqObject: string | undefined = req.get('User-Agent');
 
-    if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
-      });
-      console.log("Invalid signup credentials input. first_name can not be null or undefined.");
-      return ;
-    }
-
-    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
-
-    if(typeof receivedValueOfFirstName !== 'string') {
-      receivedValueOfFirstName = String(receivedValueOfFirstName);
-
-      if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
-        res.status(400).json({
-          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
-        });
-        console.log("Invalid signup credentials input. first_name must be a valid text value.");
-        return ;
-      } else {
-        req.body.first_name = receivedValueOfFirstName;
-      }
-    }
-
-    console.log("validateFirstName middleware passed.");
-    return next();
-  } catch(err) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
-      });
-      console.log(`Invalid signup credentials input. Invalid input first_name.`);
-      return ;
-    } else {
-      console.log("Error received in validateFirstName middleware.");
-      return next(err);
+  if(!userAgentStringFromReqObject) {
+    return {
+      userOperatingSystem: "",
+      userBrowser: "",
+      userBrowserVersion: "",
+      userSystemArchitecture: "",
     }
   }
-}
 
-export default validateFirstName;
+  const parser: UAParser = new UAParser(userAgentStringFromReqObject);
+
+  const userOperatingSystemDetails: IOS = parser.getOS();
+  const userBrowserDetails: IBrowser = parser.getBrowser();
+  const userSystemArchitectureDetails: ICPU = parser.getCPU();
+
+  const extractedUserAgentDetails = {
+    userOperatingSystem: userOperatingSystemDetails.name ?? "",
+    userBrowser: userBrowserDetails.name ?? "",
+    userBrowserVersion: userBrowserDetails.version ?? "",
+    userSystemArchitecture: userSystemArchitectureDetails.architecture ?? ""
+  }
+
+  return extractedUserAgentDetails;
+};
+
+export { extractUserAgentDetailsFromReq };

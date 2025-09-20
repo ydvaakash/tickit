@@ -50,54 +50,68 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate the "first_name"
+// Configure Redis client
 
-import { Request, Response, NextFunction } from "express";
-import { firstNameZodSchema, firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
-import { ZodError } from 'zod';
+/*
+import { createClient, type RedisClientType } from "redis";
+import { getStringEnvVar } from "../utils/getStringEnvironmentVariable";
 
-const validateFirstName = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    firstNameZodSchema.parse(req.body.first_name);
+const createRedisClient = (): RedisClientType => {
+  const redisServerName: string = getStringEnvVar("REDISSERVERNAME");
+  const redisSecurityPassword: string = getStringEnvVar("REDISSECURITYPASSWORD");
+  const redisServerPort: string = getStringEnvVar("REDISSERVERPORT");
 
-    if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
-      });
-      console.log("Invalid signup credentials input. first_name can not be null or undefined.");
-      return ;
-    }
-
-    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
-
-    if(typeof receivedValueOfFirstName !== 'string') {
-      receivedValueOfFirstName = String(receivedValueOfFirstName);
-
-      if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
-        res.status(400).json({
-          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
-        });
-        console.log("Invalid signup credentials input. first_name must be a valid text value.");
-        return ;
-      } else {
-        req.body.first_name = receivedValueOfFirstName;
-      }
-    }
-
-    console.log("validateFirstName middleware passed.");
-    return next();
-  } catch(err) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
-      });
-      console.log(`Invalid signup credentials input. Invalid input first_name.`);
-      return ;
-    } else {
-      console.log("Error received in validateFirstName middleware.");
-      return next(err);
-    }
+  if(!redisServerName) {
+    throw new Error("Missing Redis Server Name or it's value is missing in environment variables for redis client connection.");
+  } else if(!redisSecurityPassword) {
+    throw new Error("Missing password of Redis server in environment variables for redis client connection.");
+  } else if(!redisServerPort) {
+    throw new Error("Missing value of port of Redis server in environment variables for redis client connection.");
   }
+
+  const encodedRedisSecurityPassword: string = encodeURIComponent(redisSecurityPassword);
+  const redisServerPortAsNumber: number = parseInt(redisServerPort, 10);
+
+  if(isNaN(redisServerPortAsNumber)) {
+    throw new Error("Invalid number value of environment variable for Redis server port.");
+  }
+
+  // console.log(
+  //   `REDIS CONNECTION STRING: redis://:${encodedRedisSecurityPassword}@${redisServerName}:${redisServerPortAsNumber}`
+  // );
+
+  let redisClient: RedisClientType;
+
+  try {
+    redisClient = createClient({
+      url: `redis://:${encodedRedisSecurityPassword}@${redisServerName}:${redisServerPortAsNumber}`
+    });
+  } catch(err) {
+    throw err;
+  }
+
+  redisClient.on('error', (err) => {
+    console.error("Redis connection failed. Error: ", err);
+  });
+
+  redisClient.on('connect', () => {
+    console.log("Redis client is attempting to connect...");
+  });
+
+  redisClient.on('ready', () => {
+    console.log("Redis client is ready to use.");
+  });
+
+  return redisClient;
 }
 
-export default validateFirstName;
+const redisClient = createRedisClient();
+
+export { redisClient, createRedisClient };
+*/
+
+import { createRedisClient } from "./createRedisClient";
+
+const redisClient = createRedisClient();
+
+export { redisClient };

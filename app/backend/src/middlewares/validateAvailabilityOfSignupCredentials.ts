@@ -60,6 +60,7 @@ const validateAvailabilityOfSignupCredentials = (req: Request, res: Response, ne
     res.status(422).json({
       msg: "Missing signup credentials. Empty or missing first_name in signup request."
     });
+    console.log("Missing signup credentials. Empty or missing first_name in signup request.");
     return ;
   }
 
@@ -68,6 +69,7 @@ const validateAvailabilityOfSignupCredentials = (req: Request, res: Response, ne
     res.status(422).json({
       msg: "Missing signup credentials. Empty or missing last_name in signup request."
     });
+    console.log("Missing signup credentials. Empty or missing last_name in signup request.");
     return ;
   }
 
@@ -76,6 +78,7 @@ const validateAvailabilityOfSignupCredentials = (req: Request, res: Response, ne
     res.status(422).json({
       msg: "Missing signup credentials. Empty or missing email in signup request."
     });
+    console.log("Missing signup credentials. Empty or missing email in signup request.");
     return ;
   }
 
@@ -84,9 +87,11 @@ const validateAvailabilityOfSignupCredentials = (req: Request, res: Response, ne
     res.status(422).json({
       msg: "Missing signup credentials. Empty or missing password in signup request."
     });
+    console.log("Missing signup credentials. Empty or missing password in signup request.");
     return ;
   }
 
+  console.log("validateAvailabilityOfSignupCredentials middleware passed.");
   // call 'next' if every check mentioned above has passed
   return next();
 }

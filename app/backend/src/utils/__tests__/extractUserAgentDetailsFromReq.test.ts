@@ -50,54 +50,65 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate the "first_name"
+// Test file for extractUserAgentDetailsFromReq.ts
 
-import { Request, Response, NextFunction } from "express";
-import { firstNameZodSchema, firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
-import { ZodError } from 'zod';
+import { extractUserAgentDetailsFromReq } from "../extractUserAgentDetailsFromReq";
+import type { Request } from "express";
+import { UAParser } from "ua-parser-js";
 
-const validateFirstName = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    firstNameZodSchema.parse(req.body.first_name);
+jest.mock('ua-parser-js');
 
-    if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
-      });
-      console.log("Invalid signup credentials input. first_name can not be null or undefined.");
-      return ;
-    }
+const mockedUAParser = UAParser as jest.MockedClass<typeof UAParser>;
 
-    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
+describe("Testing 'extractUserAgentDetailsFromReq' utility", () => {
+  test("Passing undefined 'User-Agent' inside 'req' object returns all User-Agent details set to empty strings.", () => {
+    const mockReq = {
+      get: jest.fn().mockReturnValue(undefined)
+    } as unknown as Request;
+    
+    expect(extractUserAgentDetailsFromReq(mockReq)).toEqual({
+      userOperatingSystem: "",
+      userBrowser: "",
+      userBrowserVersion: "",
+      userSystemArchitecture: "",
+    });
+  });
 
-    if(typeof receivedValueOfFirstName !== 'string') {
-      receivedValueOfFirstName = String(receivedValueOfFirstName);
+  test("Passing correct 'User-Agent' inside 'req' object returns correct User-Agent values set in the returned object.", () => {
+    const mockReq = {
+      get: jest.fn().mockReturnValue("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36")
+    } as unknown as Request;
 
-      if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
-        res.status(400).json({
-          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
-        });
-        console.log("Invalid signup credentials input. first_name must be a valid text value.");
-        return ;
-      } else {
-        req.body.first_name = receivedValueOfFirstName;
-      }
-    }
+    mockedUAParser.mockImplementation(() => ({
+      getOS: jest.fn().mockReturnValue({name: "Linux"}),
+      getBrowser: jest.fn().mockReturnValue({name: "Chrome", version: "139.0.0.0"}),
+      getCPU: jest.fn().mockReturnValue({architecture: "amd64"})
+    }) as any);
 
-    console.log("validateFirstName middleware passed.");
-    return next();
-  } catch(err) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
-      });
-      console.log(`Invalid signup credentials input. Invalid input first_name.`);
-      return ;
-    } else {
-      console.log("Error received in validateFirstName middleware.");
-      return next(err);
-    }
-  }
-}
+    expect(extractUserAgentDetailsFromReq(mockReq)).toEqual({
+      userOperatingSystem: "Linux",
+      userBrowser: "Chrome",
+      userBrowserVersion: "139.0.0.0",
+      userSystemArchitecture: "amd64",
+    });
+  });
 
-export default validateFirstName;
+  test("For values missing in 'User-Agent' inside the 'req' object, the returned object contains empty strings.", () => {
+    const mockReq = {
+      get: jest.fn().mockReturnValue("Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome Safari/537.36")
+    } as unknown as Request;
+
+    mockedUAParser.mockImplementation(() => ({
+      getOS: jest.fn().mockReturnValue({name: ""}),
+      getBrowser: jest.fn().mockReturnValue({name: "Chrome", version:""}),
+      getCPU: jest.fn().mockReturnValue({architecture: ""}),
+    }) as any);
+
+    expect(extractUserAgentDetailsFromReq(mockReq)).toEqual({
+      userOperatingSystem: "",
+      userBrowser: "Chrome",
+      userBrowserVersion: "",
+      userSystemArchitecture: "",
+    });
+  });
+});

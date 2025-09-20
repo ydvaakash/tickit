@@ -50,54 +50,60 @@
  ⚠️ **All rights not expressly granted herein are reserved by Aakash Yadav.**
 */
 
-// Middleware to validate the "first_name"
+// Test file for 'getStringEnvVar.ts' utility
 
-import { Request, Response, NextFunction } from "express";
-import { firstNameZodSchema, firstNameTypeFromZod } from '../zodSchemas/firstNameZodSchema';
-import { ZodError } from 'zod';
+import { getStringEnvVar } from "../getStringEnvironmentVariable";
+import 'dotenv/config';
 
-const validateFirstName = (req: Request, res: Response, next: NextFunction): void => {
-  try {
-    firstNameZodSchema.parse(req.body.first_name);
+describe("Testing 'getStringEnvVar' utility", () => {
+  const original_Env = process.env;
 
-    if(req.body.first_name === 'null' || req.body.first_name === 'undefined') {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. first_name can not be null or undefined.`
-      });
-      console.log("Invalid signup credentials input. first_name can not be null or undefined.");
-      return ;
-    }
+  beforeEach(() => {
+    jest.resetModules();
+    process.env = {...original_Env}; 
+  });
 
-    let receivedValueOfFirstName: firstNameTypeFromZod = req.body.first_name;
+  afterEach(() => {
+    process.env = original_Env;
+  });
 
-    if(typeof receivedValueOfFirstName !== 'string') {
-      receivedValueOfFirstName = String(receivedValueOfFirstName);
+  test("A blank string is returned if the provided key doesn't exist among the environment variables.", () => {
+    const key = "TESTKEY";
 
-      if(receivedValueOfFirstName === 'null' || receivedValueOfFirstName === 'undefined') {
-        res.status(400).json({
-          msg: 'Invalid signup credentials input. first_name must be a valid text value.'
-        });
-        console.log("Invalid signup credentials input. first_name must be a valid text value.");
-        return ;
-      } else {
-        req.body.first_name = receivedValueOfFirstName;
-      }
-    }
+    delete process.env[key];
 
-    console.log("validateFirstName middleware passed.");
-    return next();
-  } catch(err) {
-    if(err instanceof ZodError) {
-      res.status(400).json({
-        msg: `Invalid signup credentials input. Invalid input 'first_name'. ${err.errors[0]?.message || "Unknown validation error."}`
-      });
-      console.log(`Invalid signup credentials input. Invalid input first_name.`);
-      return ;
-    } else {
-      console.log("Error received in validateFirstName middleware.");
-      return next(err);
-    }
-  }
-}
+    const result = getStringEnvVar(key);
 
-export default validateFirstName;
+    expect(result).toBe("");
+  });
+
+  test("A blank string is returned if there is no value available against the provided key among the environment variables.", () => {
+    const key = "TESTKEY";
+
+    process.env[key] = undefined;
+
+    const result = getStringEnvVar(key);
+
+    expect(result).toBe("");
+  });
+
+  test("The correct value of the environment variable is returned when the provided key is available among the environment variables and there is a value available for this key.", () => {
+    const key = "TESTKEY";
+
+    process.env[key] = "TESTKEYVALUE";
+
+    const result = getStringEnvVar(key);
+
+    expect(result).toBe("TESTKEYVALUE");
+  });
+
+  test("The trimmed value of the environment variable is returned when the original value has multiple spaces before &/or after the value.", () => {
+    const key = "TESTKEY";
+
+    process.env[key] = "       Test Key Value               ";
+
+    const result = getStringEnvVar(key);
+
+    expect(result).toBe("Test Key Value");
+  });
+});

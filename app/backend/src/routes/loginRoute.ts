@@ -53,18 +53,24 @@
 // Handle POST requests to '/login' route
 
 import express, { Router } from 'express';
+import { validateExistanceOfRequestHeaders } from '../middlewares/validateExistanceOfRequestHeaders';
 import validateExistanceOfRequestBody from '../middlewares/validateExistanceOfRequestBody';
+import { validateAvailabilityOfDetailsInHeaders } from '../middlewares/validateAvailabilityOfDetailsInHeaders';
 import { validateAvailabilityOfLoginCredentials } from '../middlewares/validateAvailabilityOfLoginCredentials';
 import validateEmail from '../middlewares/validateEmail';
 import validateUserPassword from '../middlewares/validateUserPassword';
 import { loginLogic } from '../controllers/loginLogic';
+import { collectDeviceFingerprintsFromReq } from '../middlewares/collectDeviceFingerprintsFromReq';
 
 const loginRouter: Router = express.Router();
 
-loginRouter.post('/', validateExistanceOfRequestBody,
+loginRouter.post('/', validateExistanceOfRequestHeaders,
+  validateExistanceOfRequestBody,
+  validateAvailabilityOfDetailsInHeaders,
   validateAvailabilityOfLoginCredentials,
   validateEmail,
   validateUserPassword,
+  collectDeviceFingerprintsFromReq,
   loginLogic
 );
 

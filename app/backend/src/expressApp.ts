@@ -61,6 +61,8 @@ import globalErrorHandler from './middlewares/globalErrorHandler';
 
 const expressApp: Express = express();
 
+expressApp.set('trust proxy', true);
+
 expressApp.use(express.json());   // parse json requests
 
 expressApp.use(cookieParser());

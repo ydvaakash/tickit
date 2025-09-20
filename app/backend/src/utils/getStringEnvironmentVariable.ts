@@ -55,13 +55,13 @@
 import "dotenv/config";
 
 const getStringEnvVar = (key: string): string => {
-  const value: string | undefined = process.env[key];
+  const value: string | undefined = process.env[key] ?? "";
 
   if(!value) {
-    return '';
+    return "";
   }
 
-  return value;
+  return value.trim();
 }
 
 export { getStringEnvVar };

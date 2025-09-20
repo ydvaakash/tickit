@@ -61,4 +61,14 @@ const axiosInstance = axios.create({
   }
 });
 
+axiosInstance.interceptors.request.use(
+  (config) => {
+    config.headers['x-timezone'] = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return config;
+  },
+  (error) => {
+      return Promise.reject(error);
+  }
+);
+
 export { axiosInstance };
